@@ -1,4 +1,4 @@
-= Spring Cloud Sockets [what a horrible name]
+= Spring Cloud Sockets [We need a better name]
 
 This repo is a POC on how to expose Spring Services via http://rsocket.io[RSocket] protocol.
 

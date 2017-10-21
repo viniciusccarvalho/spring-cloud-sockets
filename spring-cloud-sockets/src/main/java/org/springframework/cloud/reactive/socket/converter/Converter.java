@@ -17,29 +17,18 @@
 
 package org.springframework.cloud.reactive.socket.converter;
 
-
 import org.springframework.core.ResolvableType;
 import org.springframework.util.MimeType;
 
 /**
  * @author Vinicius Carvalho
  */
-public class SerializableConverter extends AbstractConverter {
+public interface Converter {
 
-	public SerializableConverter() {
-		super(MimeType.valueOf("application/java-serialized-object"));
-	}
+	Object read(byte[] payload, ResolvableType targetType);
 
+	byte[] write(Object target);
 
-	@Override
-	public Object read(byte[] payload, ResolvableType targetType) {
-		return null;
-	}
-
-	@Override
-	public byte[] write(Object target) {
-		return null;
-	}
-
+	boolean accept(MimeType mimeType);
 
 }

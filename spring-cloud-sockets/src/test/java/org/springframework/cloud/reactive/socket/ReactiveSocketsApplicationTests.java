@@ -17,21 +17,8 @@
 
 package org.springframework.cloud.reactive.socket;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.xml.transform.Source;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.rsocket.Payload;
-import io.rsocket.RSocket;
-import io.rsocket.RSocketFactory;
-import io.rsocket.transport.netty.client.TcpClientTransport;
-import io.rsocket.util.PayloadImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;

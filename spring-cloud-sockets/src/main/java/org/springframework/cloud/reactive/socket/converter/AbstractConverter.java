@@ -17,7 +17,6 @@
 
 package org.springframework.cloud.reactive.socket.converter;
 
-import io.rsocket.Payload;
 
 import org.springframework.core.ResolvableType;
 import org.springframework.util.MimeType;
@@ -25,12 +24,24 @@ import org.springframework.util.MimeType;
 /**
  * @author Vinicius Carvalho
  */
-public interface BinaryConverter {
+public abstract class AbstractConverter implements Converter {
 
-	Object fromPayload(byte[] payload, ResolvableType targetType);
+	public AbstractConverter(MimeType mimeType) {
+		this.mimeType = mimeType;
+	}
 
-	byte[] toPayload(Object target);
+	protected MimeType mimeType;
 
-	boolean accept(MimeType mimeType);
+	public boolean accept(MimeType mimeType) {
+		return mimeType.equals(this.mimeType);
+	}
+
+	public ResolvableType getActualType(ResolvableType original){
+		if(!original.hasGenerics()){
+			return  original;
+		}else{
+			return original.getGeneric(0);
+		}
+	}
 
 }

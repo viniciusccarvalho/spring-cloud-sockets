@@ -31,8 +31,8 @@ import io.rsocket.transport.ClientTransport;
 import io.rsocket.transport.netty.client.TcpClientTransport;
 
 import org.springframework.cloud.reactive.socket.ServiceHandlerInfo;
-import org.springframework.cloud.reactive.socket.converter.BinaryConverter;
-import org.springframework.cloud.reactive.socket.converter.JacksonBinaryConverter;
+import org.springframework.cloud.reactive.socket.converter.Converter;
+import org.springframework.cloud.reactive.socket.converter.JacksonConverter;
 import org.springframework.cloud.reactive.socket.converter.SerializableConverter;
 import org.springframework.cloud.reactive.socket.util.ServiceUtils;
 import org.springframework.util.MimeTypeUtils;
@@ -46,7 +46,7 @@ public class ReactiveSocketClient {
 
 	private Map<Method, AbstractRemoteHandler> remoteHandlers = new ConcurrentHashMap<>();
 	
-	private List<BinaryConverter> converters = new LinkedList<>();
+	private List<Converter> converters = new LinkedList<>();
 
 
 	public ReactiveSocketClient(ClientTransport transport){
@@ -55,7 +55,7 @@ public class ReactiveSocketClient {
 	}
 
 	private void initDefaultConverters() {
-		this.converters.add(new JacksonBinaryConverter());
+		this.converters.add(new JacksonConverter());
 		this.converters.add(new SerializableConverter());
 	}
 
@@ -95,8 +95,8 @@ public class ReactiveSocketClient {
 
 		synchronized (remoteHandlers){
 			ServiceHandlerInfo info = ServiceUtils.info(method);
-			BinaryConverter converter = converters.stream().filter(payloadConverter -> payloadConverter.accept(info.getMimeType())).findFirst().orElseThrow(IllegalStateException::new);
-			BinaryConverter metadataConverter = converters.stream().filter(binaryConverter -> binaryConverter.accept(MimeTypeUtils.APPLICATION_JSON)).findFirst().orElseThrow(IllegalStateException::new);
+			Converter converter = converters.stream().filter(payloadConverter -> payloadConverter.accept(info.getMimeType())).findFirst().orElseThrow(IllegalStateException::new);
+			Converter metadataConverter = converters.stream().filter(binaryConverter -> binaryConverter.accept(MimeTypeUtils.APPLICATION_JSON)).findFirst().orElseThrow(IllegalStateException::new);
 
 			switch (info.getExchangeMode()){
 				case ONE_WAY:

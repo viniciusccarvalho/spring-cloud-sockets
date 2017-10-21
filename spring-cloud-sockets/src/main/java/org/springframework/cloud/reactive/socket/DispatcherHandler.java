@@ -37,8 +37,8 @@ import reactor.core.publisher.Mono;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.cloud.reactive.socket.converter.BinaryConverter;
-import org.springframework.cloud.reactive.socket.converter.JacksonBinaryConverter;
+import org.springframework.cloud.reactive.socket.converter.Converter;
+import org.springframework.cloud.reactive.socket.converter.JacksonConverter;
 import org.springframework.cloud.reactive.socket.converter.SerializableConverter;
 import org.springframework.cloud.reactive.socket.util.ServiceUtils;
 import org.springframework.context.ApplicationContext;
@@ -60,7 +60,7 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 
 	private Logger logger = LoggerFactory.getLogger(getClass());
 
-	private List<BinaryConverter> converters = new LinkedList<>();
+	private List<Converter> converters = new LinkedList<>();
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -68,7 +68,7 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 	}
 
 	private void initDefaultConverters() {
-		this.converters.add(new JacksonBinaryConverter());
+		this.converters.add(new JacksonConverter());
 		this.converters.add(new SerializableConverter());
 	}
 
@@ -109,8 +109,8 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 		JsonNode metadata = readConnectionMetadata(payload.getMetadataUtf8());
 		MethodHandler handler = handlerFor(metadata);
 		if(handler != null){
-			BinaryConverter converter = converterFor(MimeType.valueOf(metadata.get("MIME_TYPE").textValue()));
-			handler.invoke(converter.fromPayload(ServiceUtils.toByteArray(payload.getData()), handler.parameterType));
+			Converter converter = converterFor(MimeType.valueOf(metadata.get("MIME_TYPE").textValue()));
+			handler.invoke(converter.read(ServiceUtils.toByteArray(payload.getData()), handler.parameterType));
 			return Mono.empty();
 		}else{
 			return Mono.error(new ApplicationException("No path found for " + metadata.get("PATH").asText()));
@@ -125,10 +125,10 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 		JsonNode metadata = readConnectionMetadata(payload.getMetadataUtf8());
 		MethodHandler handler = handlerFor(metadata);
 		if(handler != null){
-			BinaryConverter converter = converterFor(MimeType.valueOf(metadata.get("MIME_TYPE").textValue()));
-			Mono result = (Mono)(handler.invoke(converter.fromPayload(ServiceUtils.toByteArray(payload.getData()), handler.parameterType)));
+			Converter converter = converterFor(MimeType.valueOf(metadata.get("MIME_TYPE").textValue()));
+			Mono result = (Mono)(handler.invoke(converter.read(ServiceUtils.toByteArray(payload.getData()), handler.parameterType)));
 
-			return result.map(converter::toPayload).map(o -> new PayloadImpl((byte[])o));
+			return result.map(converter::write).map(o -> new PayloadImpl((byte[])o));
 		}else{
 			return Mono.error(new ApplicationException("No path found for " + metadata.get("PATH").asText()));
 		}
@@ -151,7 +151,7 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 		return super.requestChannel(payloads);
 	}
 
-	private BinaryConverter converterFor(MimeType mimeType){
+	private Converter converterFor(MimeType mimeType){
 		return this.converters
 				.stream()
 				.filter(binaryConverter -> binaryConverter.accept(mimeType))

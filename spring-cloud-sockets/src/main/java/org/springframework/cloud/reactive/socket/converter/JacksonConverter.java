@@ -17,31 +17,42 @@
 
 package org.springframework.cloud.reactive.socket.converter;
 
+import java.io.IOException;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.core.ResolvableType;
-import org.springframework.util.MimeType;
+import org.springframework.util.MimeTypeUtils;
 
 /**
  * @author Vinicius Carvalho
  */
-public abstract class AbstractBinaryConverter implements BinaryConverter {
+public class JacksonConverter extends AbstractConverter {
 
-	public AbstractBinaryConverter(MimeType mimeType) {
-		this.mimeType = mimeType;
+	private ObjectMapper mapper = new ObjectMapper();
+
+	public JacksonConverter() {
+		super(MimeTypeUtils.APPLICATION_JSON);
 	}
 
-	protected MimeType mimeType;
-
-	public boolean accept(MimeType mimeType) {
-		return mimeType.equals(this.mimeType);
-	}
-
-	public ResolvableType getActualType(ResolvableType original){
-		if(!original.hasGenerics()){
-			return  original;
-		}else{
-			return original.getGeneric(0);
+	@Override
+	public Object read(byte[] payload, ResolvableType targetType) {
+		try {
+			return mapper.readValue(payload, getActualType(targetType).resolve());
+		}
+		catch (IOException e) {
+			throw new IllegalStateException(e);
 		}
 	}
 
+	@Override
+	public byte[] write(Object target) {
+		try {
+			return mapper.writeValueAsBytes(target);
+		}
+		catch (JsonProcessingException e) {
+			throw new IllegalStateException(e);
+		}
+	}
 }

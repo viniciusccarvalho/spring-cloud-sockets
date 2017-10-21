@@ -26,7 +26,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import io.rsocket.RSocket;
 
 import org.springframework.cloud.reactive.socket.ServiceHandlerInfo;
-import org.springframework.cloud.reactive.socket.converter.BinaryConverter;
+import org.springframework.cloud.reactive.socket.converter.Converter;
 import org.springframework.core.ResolvableType;
 
 /**
@@ -42,19 +42,19 @@ public abstract class AbstractRemoteHandler {
 
 	protected ResolvableType parameterType;
 
-	protected BinaryConverter payloadConverter;
+	protected Converter payloadConverter;
 
-	protected BinaryConverter metadataConverter;
+	protected Converter metadataConverter;
 
 	private ByteBuffer metadata;
 
 	private ReentrantLock lock = new ReentrantLock();
 
-	public void setPayloadConverter(BinaryConverter converter) {
+	public void setPayloadConverter(Converter converter) {
 		this.payloadConverter = converter;
 	}
 
-	public void setMetadataConverter(BinaryConverter converter){
+	public void setMetadataConverter(Converter converter){
 		this.metadataConverter = converter;
 	}
 
@@ -84,7 +84,7 @@ public abstract class AbstractRemoteHandler {
 		Map<String,String> metadataMap = new HashMap<>();
 		metadataMap.put("PATH", info.getPath());
 		metadataMap.put("MIME_TYPE", info.getMimeType().toString());
-		return ByteBuffer.wrap(metadataConverter.toPayload(metadataMap));
+		return ByteBuffer.wrap(metadataConverter.write(metadataMap));
 	}
 
 

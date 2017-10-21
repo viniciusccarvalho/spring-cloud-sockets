@@ -60,7 +60,7 @@ public class ReactiveSocketClient {
 	}
 
 	public ReactiveSocketClient(String host, Integer port){
-		connect(TcpClientTransport.create(host, port));
+		this(TcpClientTransport.create(host, port));
 	}
 
 	private void connect(ClientTransport transport){
@@ -101,6 +101,10 @@ public class ReactiveSocketClient {
 			switch (info.getExchangeMode()){
 				case ONE_WAY:
 					handler = new OneWayRemoteHandler(socket, info, method);
+					remoteHandlers.put(method, handler);
+					break;
+				case REQUEST_ONE:
+					handler = new RequestOneRemoteHandler(socket, info, method);
 					remoteHandlers.put(method, handler);
 					break;
 			}

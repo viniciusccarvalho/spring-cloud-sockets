@@ -21,6 +21,7 @@ import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 import io.rsocket.RSocket;
 
@@ -45,7 +46,9 @@ public abstract class AbstractRemoteHandler {
 
 	protected BinaryConverter metadataConverter;
 
-	protected final ByteBuffer metadata;
+	private ByteBuffer metadata;
+
+	private ReentrantLock lock = new ReentrantLock();
 
 	public void setPayloadConverter(BinaryConverter converter) {
 		this.payloadConverter = converter;
@@ -60,9 +63,22 @@ public abstract class AbstractRemoteHandler {
 		this.info = info;
 		this.returnType = ResolvableType.forMethodReturnType(method);
 		this.parameterType = ResolvableType.forMethodParameter(method, 0);
-		this.metadata = initMetadata();
 	}
 
+
+	public ByteBuffer getMetadata() {
+		if(metadata != null){
+			return metadata;
+		}else{
+			try{
+				lock.lock();
+				this.metadata = initMetadata();
+			}finally {
+				lock.unlock();
+			}
+		}
+		return this.metadata;
+	}
 
 	private ByteBuffer initMetadata(){
 		Map<String,String> metadataMap = new HashMap<>();

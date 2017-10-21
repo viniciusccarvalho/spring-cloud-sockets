@@ -20,6 +20,8 @@ package org.springframework.cloud.reactive.socket;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.transform.Source;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.rsocket.Payload;
@@ -30,12 +32,14 @@ import io.rsocket.util.PayloadImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.reactive.socket.annotation.EnableReactiveSockets;
 import org.springframework.cloud.reactive.socket.annotation.OneWayMapping;
-import org.springframework.cloud.reactive.socket.annotation.RequestStreamMapping;
+import org.springframework.cloud.reactive.socket.annotation.RequestOneMapping;
+import org.springframework.cloud.reactive.socket.client.ReactiveSocketClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -49,18 +53,16 @@ public class ReactiveSocketsApplicationTests {
 
 	@Test
 	public void contextLoads()  throws Exception{
-		Request request = new Request("Hello", "/forget", "text/plain");
-		RSocket socket = RSocketFactory.connect()
-				.transport(TcpClientTransport.create("localhost", 5000))
-				.start()
-				.block();
+		ReactiveSocketClient client = new ReactiveSocketClient("localhost", 5000);
+		MyService clientService = client.create(MyService.class);
 
-		socket.fireAndForget(request.toPayload()).block();
-		Thread.sleep(10000);
-
+		User user = new User();
+		user.setFavoriteColor("blue");
+		user.setName("Mary");
+		clientService.process(user);
+		Mono<Integer> result = clientService.create(user);
+		System.out.println("Id: " + result.block());
 	}
-
-
 
 
 	@SpringBootApplication
@@ -69,53 +71,62 @@ public class ReactiveSocketsApplicationTests {
 
 		@Bean
 		public MyService myService(){
-			return new MyService();
+			return new MyServiceImpl();
 		}
 	}
 
+
+
+	interface MyService {
+		@OneWayMapping(value = "/forget", mimeType = "application/json")
+		void process(User user);
+
+		@RequestOneMapping(value = "/user", mimeType = "application/json")
+		Mono<Integer> create(User user);
+	}
 
 	@Service
-	public static class MyService {
+	public static class MyServiceImpl implements MyService{
 
-		@OneWayMapping(value = "/forget", mimeType = "text/plain")
-		public void process(Payload payload){
-			System.out.println(payload.getDataUtf8());
+		public void process(User user){
+			System.out.println(user);
 		}
 
-		@RequestStreamMapping(value = "/hash", mimeType = "application/json")
-		public Flux<Integer> hash(Flux<String> flux){
-			return flux.map(s -> s.hashCode());
+		public Mono<Integer> create(User user){
+			return Mono.just(1);
 		}
 
 	}
 
 
-	public class Request {
 
-		private ObjectMapper mapper = new ObjectMapper();
+	public static class User {
+		private String name;
+		private String favoriteColor;
 
-		private String contentType;
-
-		private String path;
-
-		private String data;
-
-		public Request(String data, String path, String contentType) {
-			this.contentType = contentType;
-			this.path = path;
-			this.data = data;
+		public String getName() {
+			return name;
 		}
 
-		public Payload toPayload() {
-			Map<String,String> metadata = new HashMap<>();
-			metadata.put("PATH", this.path);
-			metadata.put("MIME_TYPE", this.contentType);
-			try {
-				return new PayloadImpl(this.data.getBytes(), mapper.writeValueAsBytes(metadata));
-			}
-			catch (JsonProcessingException e) {
-				throw new IllegalStateException("Could not serialize metadata");
-			}
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public String getFavoriteColor() {
+			return favoriteColor;
+		}
+
+		public void setFavoriteColor(String favoriteColor) {
+			this.favoriteColor = favoriteColor;
+		}
+
+		@Override
+		public String toString() {
+			final StringBuilder sb = new StringBuilder("User{");
+			sb.append("name='").append(name).append('\'');
+			sb.append(", favoriteColor='").append(favoriteColor).append('\'');
+			sb.append('}');
+			return sb.toString();
 		}
 	}
 

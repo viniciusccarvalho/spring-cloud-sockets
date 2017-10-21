@@ -18,6 +18,7 @@
 package org.springframework.cloud.reactive.socket.util;
 
 import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
 
 import org.springframework.cloud.reactive.socket.ServiceHandlerInfo;
 import org.springframework.cloud.reactive.socket.annotation.ReactiveSocket;
@@ -35,5 +36,11 @@ public class ServiceUtils {
 		}
 		ServiceHandlerInfo info = new ServiceHandlerInfo(annotated.value(), annotated.mimeType(), annotated.exchangeMode());
 		return info;
+	}
+
+	public static byte[] toByteArray(ByteBuffer buffer){
+		byte[] bytes = new byte[buffer.remaining()];
+		buffer.get(bytes, 0, bytes.length);
+		return bytes;
 	}
 }

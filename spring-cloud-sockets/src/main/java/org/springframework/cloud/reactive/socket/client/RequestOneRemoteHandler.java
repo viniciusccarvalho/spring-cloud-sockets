@@ -18,24 +18,32 @@
 package org.springframework.cloud.reactive.socket.client;
 
 import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
 
 import io.rsocket.Payload;
 import io.rsocket.RSocket;
+import io.rsocket.util.PayloadImpl;
+import reactor.core.publisher.Mono;
 
 import org.springframework.cloud.reactive.socket.ServiceHandlerInfo;
+import org.springframework.cloud.reactive.socket.util.ServiceUtils;
 
 /**
  * @author Vinicius Carvalho
  */
 public class RequestOneRemoteHandler extends AbstractRemoteHandler {
+
 	public RequestOneRemoteHandler(RSocket socket, ServiceHandlerInfo info, Method method) {
 		super(socket, info, method);
 	}
 
 	@Override
 	public Object doInvoke(Object argument) {
+		byte[] data = payloadConverter.toPayload(argument);
 
+		return socket.requestResponse(new PayloadImpl(ByteBuffer.wrap(data), getMetadata())).map(payload -> {
+			return payloadConverter.fromPayload(ServiceUtils.toByteArray(payload.getData()), returnType);
+		});
 
-		return null;
 	}
 }

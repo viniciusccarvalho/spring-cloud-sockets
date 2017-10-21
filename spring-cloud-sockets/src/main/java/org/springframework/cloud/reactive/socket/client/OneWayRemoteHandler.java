@@ -40,7 +40,8 @@ public class OneWayRemoteHandler extends AbstractRemoteHandler {
 	@Override
 	public Object doInvoke(Object argument) {
 		byte[] payload = payloadConverter.toPayload(argument);
-		socket.fireAndForget(new PayloadImpl(ByteBuffer.wrap(payload), this.metadata)).block();
+
+		socket.fireAndForget(new PayloadImpl(ByteBuffer.wrap(payload), getMetadata())).block();
 		return Mono.empty();
 	}
 }

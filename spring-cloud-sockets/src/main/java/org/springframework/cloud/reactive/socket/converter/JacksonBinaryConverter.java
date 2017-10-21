@@ -39,7 +39,7 @@ public class JacksonBinaryConverter extends AbstractBinaryConverter {
 	@Override
 	public Object fromPayload(byte[] payload, ResolvableType targetType) {
 		try {
-			return mapper.readValue(payload, targetType.resolve());
+			return mapper.readValue(payload, getActualType(targetType).resolve());
 		}
 		catch (IOException e) {
 			throw new IllegalStateException(e);

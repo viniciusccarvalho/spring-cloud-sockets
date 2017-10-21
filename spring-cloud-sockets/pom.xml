@@ -9,7 +9,6 @@
 		<groupId>org.springframework.cloud</groupId>
 		<artifactId>spring-cloud-sockets-parent</artifactId>
 		<version>1.0.0.BUILD-SNAPSHOT</version>
-		<relativePath/>
 	</parent>
 	<dependencies>
 		<dependency>

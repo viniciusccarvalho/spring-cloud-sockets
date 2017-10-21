@@ -23,7 +23,6 @@ import java.lang.reflect.Proxy;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.rsocket.RSocket;
@@ -32,8 +31,11 @@ import io.rsocket.transport.ClientTransport;
 import io.rsocket.transport.netty.client.TcpClientTransport;
 
 import org.springframework.cloud.reactive.socket.ServiceHandlerInfo;
-import org.springframework.cloud.reactive.socket.converter.PayloadConverter;
+import org.springframework.cloud.reactive.socket.converter.BinaryConverter;
+import org.springframework.cloud.reactive.socket.converter.JacksonBinaryConverter;
+import org.springframework.cloud.reactive.socket.converter.SerializableConverter;
 import org.springframework.cloud.reactive.socket.util.ServiceUtils;
+import org.springframework.util.MimeTypeUtils;
 
 /**
  * @author Vinicius Carvalho
@@ -44,7 +46,7 @@ public class ReactiveSocketClient {
 
 	private Map<Method, AbstractRemoteHandler> remoteHandlers = new ConcurrentHashMap<>();
 	
-	private List<PayloadConverter> converters = new LinkedList<>();
+	private List<BinaryConverter> converters = new LinkedList<>();
 
 
 	public ReactiveSocketClient(ClientTransport transport){
@@ -53,6 +55,8 @@ public class ReactiveSocketClient {
 	}
 
 	private void initDefaultConverters() {
+		this.converters.add(new JacksonBinaryConverter());
+		this.converters.add(new SerializableConverter());
 	}
 
 	public ReactiveSocketClient(String host, Integer port){
@@ -91,7 +95,8 @@ public class ReactiveSocketClient {
 
 		synchronized (remoteHandlers){
 			ServiceHandlerInfo info = ServiceUtils.info(method);
-			PayloadConverter converter = converters.stream().filter(payloadConverter -> payloadConverter.accept(info.getMimeType())).findFirst().orElseThrow(IllegalStateException::new);
+			BinaryConverter converter = converters.stream().filter(payloadConverter -> payloadConverter.accept(info.getMimeType())).findFirst().orElseThrow(IllegalStateException::new);
+			BinaryConverter metadataConverter = converters.stream().filter(binaryConverter -> binaryConverter.accept(MimeTypeUtils.APPLICATION_JSON)).findFirst().orElseThrow(IllegalStateException::new);
 
 			switch (info.getExchangeMode()){
 				case ONE_WAY:
@@ -99,7 +104,8 @@ public class ReactiveSocketClient {
 					remoteHandlers.put(method, handler);
 					break;
 			}
-			handler.setConverter(converter);
+			handler.setPayloadConverter(converter);
+			handler.setMetadataConverter(metadataConverter);
 		}
 
 		return handler;

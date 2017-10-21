@@ -29,15 +29,16 @@ import org.springframework.core.annotation.AliasFor;
 /**
  * @author Vinicius Carvalho
  */
-@ReactiveSocket(exchangeMode = ExchangeMode.REQUEST_ONE)
+@ReactiveSocket(exchangeMode = ExchangeMode.REQUEST_MANY)
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface RequestOne {
+public @interface RequestManyMapping {
 
 	@AliasFor(annotation = ReactiveSocket.class)
 	String value();
 
 	@AliasFor(annotation = ReactiveSocket.class)
 	String mimeType() default "application/binary";
+
 }

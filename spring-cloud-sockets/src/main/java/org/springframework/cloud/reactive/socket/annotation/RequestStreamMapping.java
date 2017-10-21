@@ -33,7 +33,7 @@ import org.springframework.core.annotation.AliasFor;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface RequestStream {
+public @interface RequestStreamMapping {
 
 	@AliasFor(annotation = ReactiveSocket.class)
 	String value();

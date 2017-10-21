@@ -19,6 +19,7 @@ package org.springframework.cloud.reactive.socket.client;
 
 import java.lang.reflect.Method;
 
+import io.rsocket.Payload;
 import io.rsocket.RSocket;
 
 import org.springframework.cloud.reactive.socket.ServiceHandlerInfo;
@@ -33,6 +34,8 @@ public class RequestOneRemoteHandler extends AbstractRemoteHandler {
 
 	@Override
 	public Object doInvoke(Object argument) {
+
+
 		return null;
 	}
 }

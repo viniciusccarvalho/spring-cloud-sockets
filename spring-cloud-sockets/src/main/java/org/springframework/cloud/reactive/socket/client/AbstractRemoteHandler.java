@@ -18,11 +18,14 @@
 package org.springframework.cloud.reactive.socket.client;
 
 import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
 import io.rsocket.RSocket;
 
 import org.springframework.cloud.reactive.socket.ServiceHandlerInfo;
-import org.springframework.cloud.reactive.socket.converter.PayloadConverter;
+import org.springframework.cloud.reactive.socket.converter.BinaryConverter;
 import org.springframework.core.ResolvableType;
 
 /**
@@ -38,14 +41,18 @@ public abstract class AbstractRemoteHandler {
 
 	protected ResolvableType parameterType;
 
-	protected PayloadConverter converter;
+	protected BinaryConverter payloadConverter;
 
-	public PayloadConverter getConverter() {
-		return converter;
+	protected BinaryConverter metadataConverter;
+
+	protected final ByteBuffer metadata;
+
+	public void setPayloadConverter(BinaryConverter converter) {
+		this.payloadConverter = converter;
 	}
 
-	public void setConverter(PayloadConverter converter) {
-		this.converter = converter;
+	public void setMetadataConverter(BinaryConverter converter){
+		this.metadataConverter = converter;
 	}
 
 	public AbstractRemoteHandler(RSocket socket, ServiceHandlerInfo info, Method method) {
@@ -53,7 +60,17 @@ public abstract class AbstractRemoteHandler {
 		this.info = info;
 		this.returnType = ResolvableType.forMethodReturnType(method);
 		this.parameterType = ResolvableType.forMethodParameter(method, 0);
+		this.metadata = initMetadata();
 	}
+
+
+	private ByteBuffer initMetadata(){
+		Map<String,String> metadataMap = new HashMap<>();
+		metadataMap.put("PATH", info.getPath());
+		metadataMap.put("MIME_TYPE", info.getMimeType().toString());
+		return ByteBuffer.wrap(metadataConverter.toPayload(metadataMap));
+	}
+
 
 	public Object invoke(Object argument){
 		return doInvoke(argument);

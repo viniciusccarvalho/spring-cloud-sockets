@@ -18,8 +18,12 @@
 package org.springframework.cloud.reactive.socket.client;
 
 import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
 
+import io.rsocket.Payload;
 import io.rsocket.RSocket;
+import io.rsocket.util.PayloadImpl;
+import reactor.core.publisher.Mono;
 
 import org.springframework.cloud.reactive.socket.ServiceHandlerInfo;
 
@@ -35,6 +39,8 @@ public class OneWayRemoteHandler extends AbstractRemoteHandler {
 
 	@Override
 	public Object doInvoke(Object argument) {
-		return null;
+		byte[] payload = payloadConverter.toPayload(argument);
+		socket.fireAndForget(new PayloadImpl(ByteBuffer.wrap(payload), this.metadata)).block();
+		return Mono.empty();
 	}
 }

@@ -23,9 +23,9 @@ import org.springframework.util.MimeType;
 /**
  * @author Vinicius Carvalho
  */
-public abstract class AbstractPayloadConverter implements PayloadConverter{
+public abstract class AbstractBinaryConverter implements BinaryConverter {
 
-	public AbstractPayloadConverter(MimeType mimeType) {
+	public AbstractBinaryConverter(MimeType mimeType) {
 		this.mimeType = mimeType;
 	}
 

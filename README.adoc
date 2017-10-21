@@ -32,34 +32,34 @@ with a series of annotations that would expose the methods to be invoked over rs
 
 * mimeType: The mimeType used for encoding the payload (currently only `application/java-serialized-object` and `application/json` are supported)
 
-=== @OneWay
+=== @OneWayMapping
 
 One way methods map to a fire/forget in Rsocket and therefore any result from your Service will be ignored
 and not sent to the wire to use
 
 ```java
 
-@OneWay(path="/receive", mimeType="application/json")
+@OneWayMapping(path="/receive", mimeType="application/json")
 public void receive(Foo foo){
 
 }
 
 ```
 
-=== @RequestOne
+=== @RequestOneMapping
 
 This is very similar to a traditional RPC scenario
 
 ```java
 
-@RequestOne(path="/convert", mimeType="application/json")
+@RequestOneMapping(path="/convert", mimeType="application/json")
 public Bar convert(Foo foo){
 
 }
 
 ```
 
-=== @RequestMany
+=== @RequestManyMapping
 
 RequestMany or Request/Stream is where reactive streams start to show it's value on this protocol.
 
@@ -70,14 +70,14 @@ In the example bellow a service would emmit Temperature data on a live connectio
 
 ```java
 
-@RequestMany(path="/temperature", mimeType="application/json")
+@RequestManyMapping(path="/temperature", mimeType="application/json")
 public Flux<Temperature> temperature(Location location){
 	return temperatureService.stream(location);
 }
 
 ```
 
-=== @RequestStream
+=== @RequestStreamMapping
 
 In this mode, client and server keep a full duplex communication.
 
@@ -85,7 +85,7 @@ An example could be a client sending a Stream of Strings that the server hashes 
 
 ```java
 
-@RequestStream(path="/hash", mimeType="application/json")
+@RequestStreamMapping(path="/hash", mimeType="application/json")
 public Flux<Integer> hash(Flux<String> flux){
 	return flux.map(s -> s.hashCode());
 }
@@ -128,7 +128,7 @@ To use the client, just pass an interface of the service annotated with the same
 ```java
 
 public interface MyService {
-	@RequestStream(value = "/hash", mimeType = "application/json")
+	@RequestStreamMapping(value = "/hash", mimeType = "application/json")
 	public Flux<Integer> hash(Flux<String> flux);
 }
 

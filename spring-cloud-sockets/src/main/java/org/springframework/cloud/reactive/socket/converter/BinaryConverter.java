@@ -25,11 +25,11 @@ import org.springframework.util.MimeType;
 /**
  * @author Vinicius Carvalho
  */
-public interface PayloadConverter {
+public interface BinaryConverter {
 
-	Object fromPayload(Payload payload, ResolvableType targetType);
+	Object fromPayload(byte[] payload, ResolvableType targetType);
 
-	Payload toPayload(Object target);
+	byte[] toPayload(Object target);
 
 	boolean accept(MimeType mimeType);
 

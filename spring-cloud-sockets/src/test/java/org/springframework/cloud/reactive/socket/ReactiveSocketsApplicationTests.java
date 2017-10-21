@@ -26,18 +26,16 @@ import io.rsocket.Payload;
 import io.rsocket.RSocket;
 import io.rsocket.RSocketFactory;
 import io.rsocket.transport.netty.client.TcpClientTransport;
-import io.rsocket.transport.netty.server.TcpServerTransport;
 import io.rsocket.util.PayloadImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.reactive.socket.annotation.EnableReactiveSockets;
-import org.springframework.cloud.reactive.socket.annotation.OneWay;
-import org.springframework.cloud.reactive.socket.annotation.RequestStream;
+import org.springframework.cloud.reactive.socket.annotation.OneWayMapping;
+import org.springframework.cloud.reactive.socket.annotation.RequestStreamMapping;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -79,12 +77,12 @@ public class ReactiveSocketsApplicationTests {
 	@Service
 	public static class MyService {
 
-		@OneWay(value = "/forget", mimeType = "text/plain")
+		@OneWayMapping(value = "/forget", mimeType = "text/plain")
 		public void process(Payload payload){
 			System.out.println(payload.getDataUtf8());
 		}
 
-		@RequestStream(value = "/hash", mimeType = "application/json")
+		@RequestStreamMapping(value = "/hash", mimeType = "application/json")
 		public Flux<Integer> hash(Flux<String> flux){
 			return flux.map(s -> s.hashCode());
 		}

@@ -17,31 +17,42 @@
 
 package org.springframework.cloud.reactive.socket.converter;
 
+import java.io.IOException;
 
-import io.rsocket.Payload;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.springframework.core.ResolvableType;
-import org.springframework.util.MimeType;
+import org.springframework.util.MimeTypeUtils;
 
 /**
  * @author Vinicius Carvalho
  */
-public class SerializableConverter extends AbstractBinaryConverter {
+public class JacksonBinaryConverter extends AbstractBinaryConverter {
 
-	public SerializableConverter() {
-		super(MimeType.valueOf("application/java-serialized-object"));
+	private ObjectMapper mapper = new ObjectMapper();
+
+	public JacksonBinaryConverter() {
+		super(MimeTypeUtils.APPLICATION_JSON);
 	}
-
 
 	@Override
 	public Object fromPayload(byte[] payload, ResolvableType targetType) {
-		return null;
+		try {
+			return mapper.readValue(payload, targetType.resolve());
+		}
+		catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override
 	public byte[] toPayload(Object target) {
-		return null;
+		try {
+			return mapper.writeValueAsBytes(target);
+		}
+		catch (JsonProcessingException e) {
+			throw new IllegalStateException(e);
+		}
 	}
-
-
 }

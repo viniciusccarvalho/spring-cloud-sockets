@@ -33,7 +33,7 @@ import org.springframework.core.annotation.AliasFor;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface OneWay {
+public @interface OneWayMapping {
 
 	@AliasFor(annotation = ReactiveSocket.class)
 	String value();

@@ -23,24 +23,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.springframework.cloud.reactive.socket.ExchangeMode;
-import org.springframework.core.annotation.AliasFor;
-
 /**
- * Annotates a method to be exposed via a fire and forget exchange type on reactive sockets.
- *
- * @see io.rsocket.RSocket
+ * Marker to indicate which argument on a service should be mapped to a Payload from Reactive Sockets.
+ * Only needed when multiple parameters are used on the method signature
  * @author Vinicius Carvalho
  */
-@ReactiveSocket(exchangeMode = ExchangeMode.ONE_WAY)
-@Target(ElementType.METHOD)
+@Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface OneWayMapping {
-
-	@AliasFor(annotation = ReactiveSocket.class)
-	String value();
-
-	@AliasFor(annotation = ReactiveSocket.class)
-	String mimeType() default "application/java-serialized-object";
+public @interface Payload {
 }

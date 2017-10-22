@@ -27,6 +27,9 @@ import org.springframework.cloud.reactive.socket.ExchangeMode;
 import org.springframework.core.annotation.AliasFor;
 
 /**
+ * Annotates a method to be exposed via a request stream exchange type on reactive sockets.
+ *
+ * @see io.rsocket.RSocket
  * @author Vinicius Carvalho
  */
 @ReactiveSocket(exchangeMode = ExchangeMode.REQUEST_MANY)

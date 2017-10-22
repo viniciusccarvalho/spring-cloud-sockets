@@ -26,6 +26,12 @@ import java.lang.annotation.Target;
 import org.springframework.cloud.reactive.socket.ExchangeMode;
 
 /**
+ * Base annotation for any method handler that wants to be exposed via reactive sockets different echange modes.
+ *
+ * @see OneWayMapping
+ * @see RequestOneMapping
+ * @see RequestManyMapping
+ * @see RequestStreamMapping
  * @author Vinicius Carvalho
  */
 @Target({ElementType.METHOD, ElementType.TYPE})

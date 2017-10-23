@@ -20,12 +20,9 @@ package org.springframework.cloud.reactive.socket;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.springframework.cloud.reactive.socket.annotation.*;
 import reactor.core.publisher.Flux;
 
-import org.springframework.cloud.reactive.socket.annotation.OneWayMapping;
-import org.springframework.cloud.reactive.socket.annotation.RequestManyMapping;
-import org.springframework.cloud.reactive.socket.annotation.RequestOneMapping;
-import org.springframework.cloud.reactive.socket.annotation.RequestStreamMapping;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
@@ -48,7 +45,6 @@ public class DispatchHandlerTests {
 	@Configuration
 	static class TestConfiguration{
 
-
 		@Bean
 		public DispatcherHandler socketHandler(){
 			return new DispatcherHandler();
@@ -61,7 +57,7 @@ public class DispatchHandlerTests {
 
 	}
 
-	@Service
+	@ReactiveService
 	public interface SampleSocketService {
 
 		@OneWayMapping("/oneway")

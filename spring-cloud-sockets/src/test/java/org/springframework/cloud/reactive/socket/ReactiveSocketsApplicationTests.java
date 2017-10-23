@@ -19,17 +19,16 @@ package org.springframework.cloud.reactive.socket;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import reactor.core.publisher.Mono;
-
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.reactive.socket.annotation.EnableReactiveSockets;
 import org.springframework.cloud.reactive.socket.annotation.OneWayMapping;
+import org.springframework.cloud.reactive.socket.annotation.ReactiveService;
 import org.springframework.cloud.reactive.socket.annotation.RequestOneMapping;
 import org.springframework.cloud.reactive.socket.client.ReactiveSocketClient;
 import org.springframework.context.annotation.Bean;
-import org.springframework.stereotype.Service;
 import org.springframework.test.context.junit4.SpringRunner;
+import reactor.core.publisher.Mono;
 
 /**
  * @author Vinicius Carvalho
@@ -60,10 +59,11 @@ public class ReactiveSocketsApplicationTests {
 		public MyService myService(){
 			return new MyServiceImpl();
 		}
+
 	}
 
 
-
+	@ReactiveService
 	interface MyService {
 		@OneWayMapping(value = "/forget", mimeType = "application/json")
 		void process(User user);
@@ -72,7 +72,7 @@ public class ReactiveSocketsApplicationTests {
 		Mono<Integer> create(User user);
 	}
 
-	@Service
+
 	public static class MyServiceImpl implements MyService{
 
 		public void process(User user){

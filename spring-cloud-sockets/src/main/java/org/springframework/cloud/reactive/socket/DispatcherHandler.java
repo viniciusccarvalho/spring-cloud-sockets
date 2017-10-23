@@ -31,6 +31,10 @@ import io.rsocket.util.PayloadImpl;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cloud.reactive.socket.annotation.ReactiveService;
+import org.springframework.cloud.reactive.socket.annotation.ReactiveSocket;
+import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -81,13 +85,15 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 			if(beanType != null){
 				final Class<?> userType = ClassUtils.getUserClass(beanType);
 				ReflectionUtils.doWithMethods(userType, method -> {
-					ServiceMethodInfo info = new ServiceMethodInfo(method);
-					if(info != null){
-						logger.info("Registering remote endpoint at path {}, exchange {} for method {}", info.getMappingInfo().getPath(), info.getMappingInfo().getExchangeMode(), method);
-						MethodHandler methodHandler = new MethodHandler(applicationContext.getBean(beanName), info);
-						mappingHandlers.add(methodHandler);
+					ReactiveService annotated = AnnotatedElementUtils.findMergedAnnotation(userType, ReactiveService.class);
+					if (annotated != null) {
+						ServiceMethodInfo info = new ServiceMethodInfo(method);
+						if (info != null) {
+							logger.info("Registering remote endpoint at path {}, exchange {} for method {}", info.getMappingInfo().getPath(), info.getMappingInfo().getExchangeMode(), method);
+							MethodHandler methodHandler = new MethodHandler(applicationContext.getBean(beanName), info);
+							mappingHandlers.add(methodHandler);
+						}
 					}
-
 				});
 			}
 		}

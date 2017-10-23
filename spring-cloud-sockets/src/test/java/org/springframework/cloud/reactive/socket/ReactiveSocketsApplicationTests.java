@@ -19,6 +19,7 @@ package org.springframework.cloud.reactive.socket;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.cloud.reactive.socket.annotation.ReactiveService;
 import reactor.core.publisher.Mono;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -72,7 +73,7 @@ public class ReactiveSocketsApplicationTests {
 		Mono<Integer> create(User user);
 	}
 
-	@Service
+	@ReactiveService
 	public static class MyServiceImpl implements MyService{
 
 		public void process(User user){

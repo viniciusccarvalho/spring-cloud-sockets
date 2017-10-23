@@ -17,65 +17,12 @@
 
 package org.springframework.cloud.reactive.socket;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mockito;
-import reactor.core.publisher.Flux;
-
-import org.springframework.cloud.reactive.socket.annotation.OneWayMapping;
-import org.springframework.cloud.reactive.socket.annotation.RequestManyMapping;
-import org.springframework.cloud.reactive.socket.annotation.RequestOneMapping;
-import org.springframework.cloud.reactive.socket.annotation.RequestStreamMapping;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Service;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
-
 /**
  * @author Vinicius Carvalho
  */
-@RunWith(SpringRunner.class)
-@ContextConfiguration(classes = DispatchHandlerTests.TestConfiguration.class)
 public class DispatchHandlerTests {
 
 
-	@Test
-	public void contextLoads() throws Exception {
-
-	}
-
-	@Configuration
-	static class TestConfiguration{
-
-
-		@Bean
-		public DispatcherHandler socketHandler(){
-			return new DispatcherHandler();
-		}
-
-		@Bean
-		public SampleSocketService service(){
-			return Mockito.mock(SampleSocketService.class);
-		}
-
-	}
-
-	@Service
-	public interface SampleSocketService {
-
-		@OneWayMapping("/oneway")
-		void oneWay(String payload);
-
-		@RequestOneMapping("requestOne")
-		String request(String payload);
-
-		@RequestManyMapping("/requestMany")
-		Flux<String> requestMany(String payload);
-
-		@RequestStreamMapping("/requestStream")
-		Flux<String> requestStream(Flux<String> flux);
-	}
 
 
 }

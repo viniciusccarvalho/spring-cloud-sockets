@@ -42,6 +42,8 @@ public class ServiceMethodInfo {
 
 	MethodParameter payloadParameter;
 
+	MethodParameter metadataParameter;
+
 	public ServiceMethodInfo(Method method) {
 		this.method = method;
 		ReactiveSocket annotated = AnnotatedElementUtils.findMergedAnnotation(method, ReactiveSocket.class);
@@ -117,5 +119,28 @@ public class ServiceMethodInfo {
 
 	public ServiceMappingInfo getMappingInfo() {
 		return mappingInfo;
+	}
+
+	public Object[] buildInvocationArguments(Object payload, Object metadata){
+		Object[] args = new Object[method.getParameterCount()];
+		for(int i=0; i<args.length; i++){
+			if(i == payloadParameter.getParameterIndex()){
+				args[i] = payload;
+			}
+			else if(metadataParameter != null && i == metadataParameter.getParameterIndex()){
+				args[i] = metadata;
+			}
+			else{
+				args[i] = getDefaultValue(new MethodParameter(this.method, i));
+			}
+		}
+		return args;
+	}
+
+	private Object getDefaultValue(MethodParameter parameter) {
+		if (Boolean.TYPE.equals(parameter.getNestedParameterType())) {
+			return Boolean.FALSE;
+		}
+		return null;
 	}
 }

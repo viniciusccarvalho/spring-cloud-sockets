@@ -19,9 +19,11 @@ package org.springframework.cloud.reactive.socket;
 
 import java.lang.reflect.Method;
 
-import org.junit.Assert;
+import static org.assertj.core.api.Assertions.*;
+
 import org.junit.Test;
 import reactor.core.publisher.Flux;
+
 
 import org.springframework.cloud.reactive.socket.annotation.OneWayMapping;
 import org.springframework.cloud.reactive.socket.annotation.Payload;
@@ -50,20 +52,21 @@ public class ServiceMethodInfoTests {
 
 	@Test
 	public void oneWayMethod() throws Exception{
+
 		Method m = ReflectionUtils.findMethod(ServiceInfoTest.class, "oneWay", String.class);
 		ServiceMethodInfo serviceMethodInfo = new ServiceMethodInfo(m);
-		Assert.assertEquals(ExchangeMode.ONE_WAY, serviceMethodInfo.getMappingInfo().getExchangeMode());
-		Assert.assertTrue(Void.TYPE.equals(serviceMethodInfo.getReturnType().resolve()));
-		Assert.assertTrue(String.class.isAssignableFrom(serviceMethodInfo.getParameterType().resolve()));
-		Assert.assertEquals("/foo",serviceMethodInfo.getMappingInfo().getPath());
-		Assert.assertEquals("application/json",serviceMethodInfo.getMappingInfo().getMimeType().toString());
+		assertThat(ExchangeMode.ONE_WAY).isEqualTo(serviceMethodInfo.getMappingInfo().getExchangeMode());
+		assertThat(Void.TYPE).isEqualTo(serviceMethodInfo.getReturnType().resolve());
+		assertThat(String.class).isAssignableFrom(serviceMethodInfo.getParameterType().resolve());
+		assertThat("/foo").isEqualTo(serviceMethodInfo.getMappingInfo().getPath());
+		assertThat("application/json").isEqualTo(serviceMethodInfo.getMappingInfo().getMimeType().toString());
 	}
 
 	@Test
 	public void multipleParameters() throws Exception {
 		Method m = ReflectionUtils.findMethod(ServiceInfoTest.class, "oneWayMultipleParameters", null);
 		ServiceMethodInfo serviceMethodInfo = new ServiceMethodInfo(m);
-		Assert.assertTrue(String.class.isAssignableFrom(serviceMethodInfo.getParameterType().resolve()));
+		assertThat(String.class).isAssignableFrom(serviceMethodInfo.getParameterType().resolve());
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -88,8 +91,8 @@ public class ServiceMethodInfoTests {
 	public void requestOneMapping() throws Exception {
 		Method m = ReflectionUtils.findMethod(ServiceInfoTest.class, "requestOneMapping", null);
 		ServiceMethodInfo serviceMethodInfo = new ServiceMethodInfo(m);
-		Assert.assertTrue(String.class.equals(serviceMethodInfo.getReturnType().resolve()));
-		Assert.assertTrue(Integer.class.equals(serviceMethodInfo.getParameterType().resolve()));
+		assertThat(String.class).isAssignableFrom(serviceMethodInfo.getReturnType().resolve());
+		assertThat(Integer.class).isAssignableFrom(serviceMethodInfo.getParameterType().resolve());
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -102,16 +105,16 @@ public class ServiceMethodInfoTests {
 	public void requestMany() throws Exception {
 		Method m = ReflectionUtils.findMethod(ServiceInfoTest.class, "requestMany", null);
 		ServiceMethodInfo serviceMethodInfo = new ServiceMethodInfo(m);
-		Assert.assertTrue(Flux.class.equals(serviceMethodInfo.getReturnType().resolve()));
-		Assert.assertTrue(String.class.equals(serviceMethodInfo.getParameterType().resolve()));
+		assertThat(Flux.class).isAssignableFrom(serviceMethodInfo.getReturnType().resolve());
+		assertThat(String.class).isAssignableFrom(serviceMethodInfo.getParameterType().resolve());
 	}
 
 	@Test
 	public void requestStream() throws Exception {
 		Method m = ReflectionUtils.findMethod(ServiceInfoTest.class, "requestStream", null);
 		ServiceMethodInfo serviceMethodInfo = new ServiceMethodInfo(m);
-		Assert.assertTrue(Flux.class.equals(serviceMethodInfo.getReturnType().resolve()));
-		Assert.assertTrue(Flux.class.equals(serviceMethodInfo.getParameterType().resolve()));
+		assertThat(Flux.class).isAssignableFrom(serviceMethodInfo.getReturnType().resolve());
+		assertThat(Flux.class).isAssignableFrom(serviceMethodInfo.getParameterType().resolve());
 	}
 
 	@Test(expected = IllegalArgumentException.class)
@@ -130,8 +133,21 @@ public class ServiceMethodInfoTests {
 	public void requestStreamAnnotated() throws Exception {
 		Method m = ReflectionUtils.findMethod(ServiceInfoTest.class, "requestStreamAnnotated", null);
 		ServiceMethodInfo serviceMethodInfo = new ServiceMethodInfo(m);
-		Assert.assertTrue(Flux.class.equals(serviceMethodInfo.getReturnType().resolve()));
-		Assert.assertTrue(Flux.class.equals(serviceMethodInfo.getParameterType().resolve()));
+		assertThat(Flux.class).isAssignableFrom(serviceMethodInfo.getReturnType().resolve());
+		assertThat(Flux.class).isAssignableFrom(serviceMethodInfo.getParameterType().resolve());
+	}
+
+	@Test
+	public void testParameterMapping() throws Exception {
+		Method m = ReflectionUtils.findMethod(ServiceInfoTest.class, "oneWayMultipleParameters", null);
+		ServiceMethodInfo serviceMethodInfo = new ServiceMethodInfo(m);
+		String payload  = "foo";
+		Object[] args = serviceMethodInfo.buildInvocationArguments(payload, null);
+		assertThat(3).isEqualTo(args.length);
+		assertThat(args[0]).isNull();
+		assertThat(args[1]).isEqualTo(payload);
+		assertThat(args[2]).isEqualTo(false);
+
 	}
 
 	interface ServiceInfoTest{

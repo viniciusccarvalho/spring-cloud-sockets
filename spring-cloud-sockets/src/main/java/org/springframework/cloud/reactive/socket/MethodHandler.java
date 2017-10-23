@@ -31,12 +31,9 @@ public class MethodHandler {
 
 	private ServiceMethodInfo info;
 
-
-
 	public MethodHandler(Object bean, ServiceMethodInfo info) {
 		this.bean = bean;
 	}
-
 
 	public Object invoke(Object... args) {
 		try {

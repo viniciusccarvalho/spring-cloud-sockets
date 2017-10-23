@@ -24,11 +24,11 @@ import org.springframework.util.MimeType;
  */
 public class ServiceMappingInfo {
 
-	private String path;
+	private final String path;
 
-	private MimeType mimeType;
+	private final MimeType mimeType;
 
-	private ExchangeMode exchangeMode;
+	private final ExchangeMode exchangeMode;
 
 
 	public ServiceMappingInfo(String path, String mimeType, ExchangeMode exchangeMode){
@@ -41,23 +41,14 @@ public class ServiceMappingInfo {
 		return path;
 	}
 
-	public void setPath(String path) {
-		this.path = path;
-	}
 
 	public MimeType getMimeType() {
 		return mimeType;
 	}
 
-	public void setMimeType(MimeType mimeType) {
-		this.mimeType = mimeType;
-	}
 
 	public ExchangeMode getExchangeMode() {
 		return exchangeMode;
 	}
 
-	public void setExchangeMode(ExchangeMode exchangeMode) {
-		this.exchangeMode = exchangeMode;
-	}
 }

@@ -109,7 +109,8 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 		MethodHandler handler = handlerFor(metadata);
 		if(handler != null){
 			Converter converter = converterFor(MimeType.valueOf(metadata.get("MIME_TYPE").textValue()));
-			handler.invoke(converter.read(ServiceUtils.toByteArray(payload.getData()), handler.getInfo().getParameterType()));
+			Object converted = converter.read(ServiceUtils.toByteArray(payload.getData()), handler.getInfo().getParameterType());
+			handler.invoke(handler.getInfo().buildInvocationArguments(converted, null));
 			return Mono.empty();
 		}else{
 			return Mono.error(new ApplicationException("No path found for " + metadata.get("PATH").asText()));
@@ -117,31 +118,46 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 
 	}
 
-
-
 	@Override
 	public Mono<Payload> requestResponse(Payload payload) {
 		JsonNode metadata = readConnectionMetadata(payload.getMetadataUtf8());
-		MethodHandler handler = handlerFor(metadata);
-		if(handler != null){
+		try {
+			MethodHandler handler = handlerFor(metadata);
 			Converter converter = converterFor(MimeType.valueOf(metadata.get("MIME_TYPE").textValue()));
-			Mono result = (Mono)(handler.invoke(converter.read(ServiceUtils.toByteArray(payload.getData()), handler.getInfo().getParameterType())));
-
-			return result.map(converter::write).map(o -> new PayloadImpl((byte[])o));
-		}else{
-			return Mono.error(new ApplicationException("No path found for " + metadata.get("PATH").asText()));
+			Object converted = converter.read(ServiceUtils.toByteArray(payload.getData()), handler.getInfo().getParameterType());
+			Object result = handler.invoke(handler.getInfo().buildInvocationArguments(converted, null));
+			Mono monoResult = monoFor(result);
+			return monoResult.map(converter::write).map(o -> new PayloadImpl((byte[]) o));
+		}catch (Exception e){
+			return Mono.error(e);
 		}
 	}
 
 	@Override
 	public Flux<Payload> requestStream(Payload payload) {
 		JsonNode metadata = readConnectionMetadata(payload.getMetadataUtf8());
-		MethodHandler handler = handlerFor(metadata);
-		if(handler != null){
-			return (Flux<Payload>) handler.invoke(payload);
-		}else{
+		try {
+			MethodHandler handler = handlerFor(metadata);
+			Converter converter = converterFor(MimeType.valueOf(metadata.get("MIME_TYPE").textValue()));
+			Object converted = converter.read(ServiceUtils.toByteArray(payload.getData()), handler.getInfo().getParameterType());
+			Flux result = (Flux)handler.invoke(handler.getInfo().buildInvocationArguments(converted, null));
+			return result.map(o ->
+				new PayloadImpl(converter.write(o))
+			);
+
+		} catch (Exception e){
 			return Flux.error(new ApplicationException("No path found for " + metadata.get("PATH").asText()));
 		}
+	}
+
+	private Mono monoFor(Object argument){
+
+		if(argument.getClass().isAssignableFrom(Mono.class)){
+			return (Mono)argument;
+		}else{
+			return Mono.just(argument);
+		}
+
 	}
 
 	@Override
@@ -159,7 +175,14 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 	}
 
 	private MethodHandler handlerFor(JsonNode metadata){
-		return this.mappingHandlers.stream().filter(methodHandler -> { return methodHandler.getInfo().getMappingInfo().getPath().equals(metadata.get("PATH").asText()); }).findFirst().orElseGet(() -> null);
+		return this.mappingHandlers
+				.stream()
+				.filter(methodHandler -> { return methodHandler
+						.getInfo()
+						.getMappingInfo()
+						.getPath().equals(metadata.get("PATH").asText()); })
+				.findFirst()
+				.orElseThrow(() -> { return new ApplicationException("No handler found");} );
 	}
 
 }

@@ -118,7 +118,7 @@ public class DispatchHandlerTests {
 			DispatchHandlerTests.this.resultsQueue.offer(user);
 		}
 
-		@OneWayMapping(value = "/onewaybinary")
+		@OneWayMapping("/onewaybinary")
 		public void oneWayBinary(User user){
 			DispatchHandlerTests.this.resultsQueue.offer(user);
 		}

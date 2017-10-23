@@ -1,5 +1,7 @@
 package org.springframework.cloud.reactive.socket.annotation;
 
+import org.springframework.stereotype.Component;
+
 import java.lang.annotation.*;
 
 /**
@@ -11,5 +13,7 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
+@Component
 public @interface ReactiveService {
+    String value() default "";
 }

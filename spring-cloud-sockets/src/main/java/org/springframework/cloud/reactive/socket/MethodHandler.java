@@ -35,6 +35,7 @@ public class MethodHandler {
 
 	public MethodHandler(Object bean, ServiceMethodInfo info) {
 		this.bean = bean;
+		this.info = info;
 	}
 
 

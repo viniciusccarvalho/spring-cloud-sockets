@@ -81,11 +81,10 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 			if(beanType != null){
 				final Class<?> userType = ClassUtils.getUserClass(beanType);
 				ReflectionUtils.doWithMethods(userType, method -> {
-					ServiceHandlerInfo info = ServiceUtils.info(method);
+					ServiceMethodInfo info = new ServiceMethodInfo(method);
 					if(info != null){
-						logger.info("Registering remote endpoint at path {}, exchange {} for method {}", info.getPath(), info.getExchangeMode(), method);
-						validateServiceMethod(method, info);
-						MethodHandler methodHandler = new MethodHandler(applicationContext.getBean(beanName), method, info);
+						logger.info("Registering remote endpoint at path {}, exchange {} for method {}", info.getMappingInfo().getPath(), info.getMappingInfo().getExchangeMode(), method);
+						MethodHandler methodHandler = new MethodHandler(applicationContext.getBean(beanName), info);
 						mappingHandlers.add(methodHandler);
 					}
 
@@ -110,7 +109,7 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 		MethodHandler handler = handlerFor(metadata);
 		if(handler != null){
 			Converter converter = converterFor(MimeType.valueOf(metadata.get("MIME_TYPE").textValue()));
-			handler.invoke(converter.read(ServiceUtils.toByteArray(payload.getData()), handler.parameterType));
+			handler.invoke(converter.read(ServiceUtils.toByteArray(payload.getData()), handler.getInfo().getParameterType()));
 			return Mono.empty();
 		}else{
 			return Mono.error(new ApplicationException("No path found for " + metadata.get("PATH").asText()));
@@ -126,7 +125,7 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 		MethodHandler handler = handlerFor(metadata);
 		if(handler != null){
 			Converter converter = converterFor(MimeType.valueOf(metadata.get("MIME_TYPE").textValue()));
-			Mono result = (Mono)(handler.invoke(converter.read(ServiceUtils.toByteArray(payload.getData()), handler.parameterType)));
+			Mono result = (Mono)(handler.invoke(converter.read(ServiceUtils.toByteArray(payload.getData()), handler.getInfo().getParameterType())));
 
 			return result.map(converter::write).map(o -> new PayloadImpl((byte[])o));
 		}else{
@@ -160,25 +159,7 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 	}
 
 	private MethodHandler handlerFor(JsonNode metadata){
-		return this.mappingHandlers.stream().filter(methodHandler -> { return methodHandler.getMappingInfo().getPath().equals(metadata.get("PATH").asText()); }).findFirst().orElseGet(() -> null);
+		return this.mappingHandlers.stream().filter(methodHandler -> { return methodHandler.getInfo().getMappingInfo().getPath().equals(metadata.get("PATH").asText()); }).findFirst().orElseGet(() -> null);
 	}
 
-	private void validateServiceMethod(Method method, ServiceHandlerInfo info){
-		if(method.getParameterCount() != 1){
-			throw new IllegalArgumentException("Service method must have exact one argument");
-		}
-
-		switch (info.getExchangeMode()){
-			case REQUEST_MANY:
-				if(!Flux.class.isAssignableFrom(method.getReturnType())){
-					throw new IllegalArgumentException("Request Many methods must return a Flux");
-				}
-				break;
-			case REQUEST_STREAM:
-				if(!Flux.class.isAssignableFrom(method.getReturnType())){
-					throw new IllegalArgumentException("Request Many methods must return a Flux");
-				}
-				break;
-		}
-	}
 }

@@ -24,7 +24,7 @@ import io.rsocket.RSocket;
 import io.rsocket.util.PayloadImpl;
 import reactor.core.publisher.Mono;
 
-import org.springframework.cloud.reactive.socket.ServiceHandlerInfo;
+import org.springframework.cloud.reactive.socket.ServiceMethodInfo;
 
 /**
  * @author Vinicius Carvalho
@@ -32,8 +32,8 @@ import org.springframework.cloud.reactive.socket.ServiceHandlerInfo;
 public class OneWayRemoteHandler extends AbstractRemoteHandler {
 
 
-	public OneWayRemoteHandler(RSocket socket, ServiceHandlerInfo info, Method method) {
-		super(socket, info, method);
+	public OneWayRemoteHandler(RSocket socket, ServiceMethodInfo info) {
+		super(socket, info);
 	}
 
 	@Override

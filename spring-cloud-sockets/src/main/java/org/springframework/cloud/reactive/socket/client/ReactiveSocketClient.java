@@ -30,7 +30,8 @@ import io.rsocket.RSocketFactory;
 import io.rsocket.transport.ClientTransport;
 import io.rsocket.transport.netty.client.TcpClientTransport;
 
-import org.springframework.cloud.reactive.socket.ServiceHandlerInfo;
+import org.springframework.cloud.reactive.socket.ServiceMappingInfo;
+import org.springframework.cloud.reactive.socket.ServiceMethodInfo;
 import org.springframework.cloud.reactive.socket.converter.Converter;
 import org.springframework.cloud.reactive.socket.converter.JacksonConverter;
 import org.springframework.cloud.reactive.socket.converter.SerializableConverter;
@@ -94,17 +95,17 @@ public class ReactiveSocketClient {
 		}
 
 		synchronized (remoteHandlers){
-			ServiceHandlerInfo info = ServiceUtils.info(method);
-			Converter converter = converters.stream().filter(payloadConverter -> payloadConverter.accept(info.getMimeType())).findFirst().orElseThrow(IllegalStateException::new);
+			ServiceMethodInfo serviceMethodInfo = new ServiceMethodInfo(method);
+			Converter converter = converters.stream().filter(payloadConverter -> payloadConverter.accept(serviceMethodInfo.getMappingInfo().getMimeType())).findFirst().orElseThrow(IllegalStateException::new);
 			Converter metadataConverter = converters.stream().filter(binaryConverter -> binaryConverter.accept(MimeTypeUtils.APPLICATION_JSON)).findFirst().orElseThrow(IllegalStateException::new);
 
-			switch (info.getExchangeMode()){
+			switch (serviceMethodInfo.getMappingInfo().getExchangeMode()){
 				case ONE_WAY:
-					handler = new OneWayRemoteHandler(socket, info, method);
+					handler = new OneWayRemoteHandler(socket, serviceMethodInfo);
 					remoteHandlers.put(method, handler);
 					break;
 				case REQUEST_ONE:
-					handler = new RequestOneRemoteHandler(socket, info, method);
+					handler = new RequestOneRemoteHandler(socket, serviceMethodInfo);
 					remoteHandlers.put(method, handler);
 					break;
 			}

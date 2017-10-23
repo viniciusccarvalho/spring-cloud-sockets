@@ -29,29 +29,18 @@ public class MethodHandler {
 
 	private Object bean;
 
-	private Method method;
+	private ServiceMethodInfo info;
 
-	ResolvableType returnType;
 
-	ResolvableType parameterType;
 
-	private ServiceHandlerInfo mappingInfo;
-
-	public MethodHandler(Object bean, Method method, ServiceHandlerInfo mappingInfo) {
+	public MethodHandler(Object bean, ServiceMethodInfo info) {
 		this.bean = bean;
-		this.method = method;
-		this.mappingInfo = mappingInfo;
-		initResolvers();
 	}
 
-	private void initResolvers() {
-		returnType = ResolvableType.forMethodReturnType(this.method);
-		parameterType = ResolvableType.forMethodParameter(this.method, 0);
-	}
 
 	public Object invoke(Object... args) {
 		try {
-			return method.invoke(bean, args);
+			return this.info.getMethod().invoke(bean, args);
 		}
 		catch (IllegalAccessException e) {
 			throw new IllegalStateException(e);
@@ -59,18 +48,9 @@ public class MethodHandler {
 		catch (InvocationTargetException e) {
 			throw new IllegalArgumentException(e);
 		}
-
 	}
 
-	public ResolvableType getReturnType() {
-		return returnType;
-	}
-
-	public ResolvableType getParameterType() {
-		return parameterType;
-	}
-
-	public ServiceHandlerInfo getMappingInfo() {
-		return mappingInfo;
+	public ServiceMethodInfo getInfo() {
+		return info;
 	}
 }

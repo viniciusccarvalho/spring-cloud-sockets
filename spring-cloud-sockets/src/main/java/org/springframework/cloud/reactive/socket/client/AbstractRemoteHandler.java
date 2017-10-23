@@ -25,7 +25,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import io.rsocket.RSocket;
 
-import org.springframework.cloud.reactive.socket.ServiceHandlerInfo;
+import org.springframework.cloud.reactive.socket.ServiceMappingInfo;
+import org.springframework.cloud.reactive.socket.ServiceMethodInfo;
 import org.springframework.cloud.reactive.socket.converter.Converter;
 import org.springframework.core.ResolvableType;
 
@@ -36,11 +37,8 @@ public abstract class AbstractRemoteHandler {
 
 	protected RSocket socket;
 
-	protected ServiceHandlerInfo info;
+	protected ServiceMethodInfo info;
 
-	protected ResolvableType returnType;
-
-	protected ResolvableType parameterType;
 
 	protected Converter payloadConverter;
 
@@ -58,11 +56,9 @@ public abstract class AbstractRemoteHandler {
 		this.metadataConverter = converter;
 	}
 
-	public AbstractRemoteHandler(RSocket socket, ServiceHandlerInfo info, Method method) {
+	public AbstractRemoteHandler(RSocket socket, ServiceMethodInfo info) {
 		this.socket = socket;
 		this.info = info;
-		this.returnType = ResolvableType.forMethodReturnType(method);
-		this.parameterType = ResolvableType.forMethodParameter(method, 0);
 	}
 
 
@@ -82,8 +78,8 @@ public abstract class AbstractRemoteHandler {
 
 	private ByteBuffer initMetadata(){
 		Map<String,String> metadataMap = new HashMap<>();
-		metadataMap.put("PATH", info.getPath());
-		metadataMap.put("MIME_TYPE", info.getMimeType().toString());
+		metadataMap.put("PATH", info.getMappingInfo().getPath());
+		metadataMap.put("MIME_TYPE", info.getMappingInfo().getMimeType().toString());
 		return ByteBuffer.wrap(metadataConverter.write(metadataMap));
 	}
 

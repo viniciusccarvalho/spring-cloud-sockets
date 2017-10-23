@@ -22,7 +22,7 @@ import org.springframework.util.MimeType;
 /**
  * @author Vinicius Carvalho
  */
-public class ServiceHandlerInfo {
+public class ServiceMappingInfo {
 
 	private String path;
 
@@ -31,7 +31,7 @@ public class ServiceHandlerInfo {
 	private ExchangeMode exchangeMode;
 
 
-	public ServiceHandlerInfo(String path, String mimeType, ExchangeMode exchangeMode){
+	public ServiceMappingInfo(String path, String mimeType, ExchangeMode exchangeMode){
 		this.path = path;
 		this.exchangeMode = exchangeMode;
 		this.mimeType = MimeType.valueOf(mimeType);

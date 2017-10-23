@@ -17,18 +17,17 @@
 
 package org.springframework.cloud.reactive.socket.client;
 
-import java.lang.reflect.Method;
 
 import io.rsocket.RSocket;
 
-import org.springframework.cloud.reactive.socket.ServiceHandlerInfo;
+import org.springframework.cloud.reactive.socket.ServiceMethodInfo;
 
 /**
  * @author Vinicius Carvalho
  */
 public class RequestStreamRemoteHandler extends AbstractRemoteHandler {
-	public RequestStreamRemoteHandler(RSocket socket, ServiceHandlerInfo info, Method method) {
-		super(socket, info, method);
+	public RequestStreamRemoteHandler(RSocket socket, ServiceMethodInfo info) {
+		super(socket, info);
 	}
 
 	@Override

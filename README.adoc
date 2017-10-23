@@ -32,6 +32,17 @@ with a series of annotations that would expose the methods to be invoked over rs
 
 * mimeType: The mimeType used for encoding the payload (currently only `application/java-serialized-object` and `application/json` are supported)
 
+=== About method handling
+
+Reactive sockets is about messaging passing, so because of this any method annotated with any of the exchange modes explained bellow
+must follow the convention:
+
+* At least one argument is needed
+* In case of a single argument, that is mapped to the Payload from RSocket
+* In case of multiple arguments, *at most* one must be annotated with `@Payload`
+* `@RequestManyMapping` and `@RequestStreamMapping` methods must return a type `Flux`
+* `@RequestStreamMapping` methods must receive a type `Flux` as the payload argument (resolved as explained before)
+
 === @OneWayMapping
 
 One way methods map to a fire/forget in Rsocket and therefore any result from your Service will be ignored

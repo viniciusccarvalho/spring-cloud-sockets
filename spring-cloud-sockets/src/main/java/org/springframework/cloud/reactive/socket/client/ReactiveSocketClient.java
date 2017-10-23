@@ -26,16 +26,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.rsocket.RSocket;
-import io.rsocket.RSocketFactory;
-import io.rsocket.transport.ClientTransport;
-import io.rsocket.transport.netty.client.TcpClientTransport;
 
-import org.springframework.cloud.reactive.socket.ServiceMappingInfo;
 import org.springframework.cloud.reactive.socket.ServiceMethodInfo;
 import org.springframework.cloud.reactive.socket.converter.Converter;
 import org.springframework.cloud.reactive.socket.converter.JacksonConverter;
 import org.springframework.cloud.reactive.socket.converter.SerializableConverter;
-import org.springframework.cloud.reactive.socket.util.ServiceUtils;
 import org.springframework.util.MimeTypeUtils;
 
 /**
@@ -50,24 +45,15 @@ public class ReactiveSocketClient {
 	private List<Converter> converters = new LinkedList<>();
 
 
-	public ReactiveSocketClient(ClientTransport transport){
+	public ReactiveSocketClient(RSocket socket){
 		initDefaultConverters();
-		connect(transport);
+		this.socket = socket;
 	}
 
 	private void initDefaultConverters() {
 		this.converters.add(new JacksonConverter());
 		this.converters.add(new SerializableConverter());
 	}
-
-	public ReactiveSocketClient(String host, Integer port){
-		this(TcpClientTransport.create(host, port));
-	}
-
-	private void connect(ClientTransport transport){
-		this.socket = RSocketFactory.connect().transport(transport).start().block();
-	}
-
 
 	public <T> T create(final Class<T> service) {
 		if(!service.isInterface()){

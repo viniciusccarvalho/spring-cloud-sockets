@@ -18,7 +18,6 @@
 package org.springframework.cloud.reactive.socket;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -37,12 +36,14 @@ import reactor.core.publisher.Mono;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.cloud.reactive.socket.annotation.ReactiveSocket;
 import org.springframework.cloud.reactive.socket.converter.Converter;
 import org.springframework.cloud.reactive.socket.converter.JacksonConverter;
 import org.springframework.cloud.reactive.socket.converter.SerializableConverter;
 import org.springframework.cloud.reactive.socket.util.ServiceUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.MimeType;
 import org.springframework.util.ReflectionUtils;
@@ -81,13 +82,12 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 			if(beanType != null){
 				final Class<?> userType = ClassUtils.getUserClass(beanType);
 				ReflectionUtils.doWithMethods(userType, method -> {
-					ServiceMethodInfo info = new ServiceMethodInfo(method);
-					if(info != null){
+					if(AnnotatedElementUtils.findMergedAnnotation(method, ReactiveSocket.class) != null) {
+						ServiceMethodInfo info = new ServiceMethodInfo(method);
 						logger.info("Registering remote endpoint at path {}, exchange {} for method {}", info.getMappingInfo().getPath(), info.getMappingInfo().getExchangeMode(), method);
 						MethodHandler methodHandler = new MethodHandler(applicationContext.getBean(beanName), info);
 						mappingHandlers.add(methodHandler);
 					}
-
 				});
 			}
 		}
@@ -106,14 +106,16 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 	@Override
 	public Mono<Void> fireAndForget(Payload payload) {
 		JsonNode metadata = readConnectionMetadata(payload.getMetadataUtf8());
-		MethodHandler handler = handlerFor(metadata);
-		if(handler != null){
+
+
+		try{
+			MethodHandler handler = handlerFor(metadata);
 			Converter converter = converterFor(MimeType.valueOf(metadata.get("MIME_TYPE").textValue()));
 			Object converted = converter.read(ServiceUtils.toByteArray(payload.getData()), handler.getInfo().getParameterType());
 			handler.invoke(handler.getInfo().buildInvocationArguments(converted, null));
 			return Mono.empty();
-		}else{
-			return Mono.error(new ApplicationException("No path found for " + metadata.get("PATH").asText()));
+		}catch (Exception e){
+			return Mono.error(e);
 		}
 
 	}
@@ -127,7 +129,11 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 			Object converted = converter.read(ServiceUtils.toByteArray(payload.getData()), handler.getInfo().getParameterType());
 			Object result = handler.invoke(handler.getInfo().buildInvocationArguments(converted, null));
 			Mono monoResult = monoFor(result);
-			return monoResult.map(converter::write).map(o -> new PayloadImpl((byte[]) o));
+			return monoResult.map(o -> {
+				byte[] data = converter.write(o);
+				return new PayloadImpl(data);
+			});
+
 		}catch (Exception e){
 			return Mono.error(e);
 		}

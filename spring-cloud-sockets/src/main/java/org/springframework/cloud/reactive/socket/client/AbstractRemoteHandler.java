@@ -17,7 +17,6 @@
 
 package org.springframework.cloud.reactive.socket.client;
 
-import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,10 +24,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import io.rsocket.RSocket;
 
-import org.springframework.cloud.reactive.socket.ServiceMappingInfo;
 import org.springframework.cloud.reactive.socket.ServiceMethodInfo;
 import org.springframework.cloud.reactive.socket.converter.Converter;
-import org.springframework.core.ResolvableType;
 
 /**
  * @author Vinicius Carvalho

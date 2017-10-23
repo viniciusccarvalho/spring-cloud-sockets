@@ -18,21 +18,19 @@
 package org.springframework.cloud.reactive.socket;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
-import org.springframework.core.ResolvableType;
 
 /**
  * @author Vinicius Carvalho
  */
 public class MethodHandler {
 
-	private Object bean;
+	private final Object bean;
 
-	private ServiceMethodInfo info;
+	private final ServiceMethodInfo info;
 
 	public MethodHandler(Object bean, ServiceMethodInfo info) {
 		this.bean = bean;
+		this.info =info;
 	}
 
 	public Object invoke(Object... args) {

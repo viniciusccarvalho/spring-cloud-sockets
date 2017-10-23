@@ -18,6 +18,7 @@
 package org.springframework.cloud.reactive.socket;
 
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -31,6 +32,7 @@ import org.springframework.cloud.reactive.socket.annotation.OneWayMapping;
 import org.springframework.cloud.reactive.socket.annotation.Payload;
 import org.springframework.cloud.reactive.socket.annotation.RequestOneMapping;
 import org.springframework.cloud.reactive.socket.converter.JacksonConverter;
+import org.springframework.cloud.reactive.socket.converter.SerializableConverter;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.ResolvableType;
 import org.springframework.util.MimeType;
@@ -58,9 +60,18 @@ public class DispatchHandlerTests {
 	}
 
 	@Test
-	public void oneWayHander() throws Exception{
+	public void oneWayHandler() throws Exception{
 		User user = new User("Mary", "blue");
 		Mono<Void> result = this.handler.fireAndForget(new PayloadImpl(converter.write(user), getMetadataBytes(MimeType.valueOf("application/json") ,"/oneway")));
+		User output = (User) resultsQueue.poll();
+		assertThat(output).isEqualTo(user);
+	}
+
+	@Test
+	public void oneWaySerializable() throws Exception {
+		User user = new User("Mary", "blue");
+		SerializableConverter serializableConverter = new SerializableConverter();
+		Mono<Void> result = this.handler.fireAndForget(new PayloadImpl(serializableConverter.write(user), getMetadataBytes(MimeType.valueOf("application/java-serialized-object") ,"/onewaybinary")));
 		User output = (User) resultsQueue.poll();
 		assertThat(output).isEqualTo(user);
 	}
@@ -82,6 +93,8 @@ public class DispatchHandlerTests {
 		}).block();
 		assertThat("blue").isEqualTo(result.getFavoriteColor());
 	}
+
+
 
 	@Test
 	public void requestOneWrongPath() throws Exception {
@@ -105,6 +118,11 @@ public class DispatchHandlerTests {
 			DispatchHandlerTests.this.resultsQueue.offer(user);
 		}
 
+		@OneWayMapping(value = "/onewaybinary")
+		public void oneWayBinary(User user){
+			DispatchHandlerTests.this.resultsQueue.offer(user);
+		}
+
 		@RequestOneMapping(value = "/redblue", mimeType = "application/json")
 		public User redOrBlue(String nothing, @Payload User user){
 			user.setFavoriteColor("blue");
@@ -113,7 +131,7 @@ public class DispatchHandlerTests {
 
 	}
 
-	static class User {
+	static class User implements Serializable{
 		private String name;
 		private String favoriteColor;
 

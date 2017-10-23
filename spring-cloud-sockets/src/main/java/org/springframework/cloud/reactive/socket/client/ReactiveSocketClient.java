@@ -94,6 +94,14 @@ public class ReactiveSocketClient {
 					handler = new RequestOneRemoteHandler(socket, serviceMethodInfo);
 					remoteHandlers.put(method, handler);
 					break;
+				case REQUEST_MANY:
+					handler = new RequestManyRemoteHandler(socket, serviceMethodInfo);
+					remoteHandlers.put(method, handler);
+					break;
+				case REQUEST_STREAM:
+					handler = new RequestStreamRemoteHandler(socket, serviceMethodInfo);
+					remoteHandlers.put(method, handler);
+					break;
 			}
 			handler.setPayloadConverter(converter);
 			handler.setMetadataConverter(metadataConverter);

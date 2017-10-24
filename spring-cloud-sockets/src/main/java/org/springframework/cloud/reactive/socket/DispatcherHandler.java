@@ -168,8 +168,22 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 
 	@Override
 	public Flux<Payload> requestChannel(Publisher<Payload> payloads) {
-
-		return super.requestChannel(payloads);
+		Flux<Payload> flux = Flux.from(payloads);
+		Payload headerPayload = flux.take(1).next().block();
+		JsonNode metadata = readConnectionMetadata(headerPayload.getMetadataUtf8());
+		try{
+			MethodHandler handler = handlerFor(metadata);
+			Converter converter = converterFor(MimeType.valueOf(metadata.get("MIME_TYPE").textValue()));
+			Flux converted = flux.repeat().map(payload -> {
+				return converter.read(ServiceUtils.toByteArray(payload.getData()), handler.getInfo().getParameterType().getGeneric(0));
+			});
+			Flux result = (Flux)handler.invoke(handler.getInfo().buildInvocationArguments(converted, null));
+			return result.map(o ->
+					new PayloadImpl(converter.write(o))
+			);
+		}catch (Exception e){
+			return Flux.error(e);
+		}
 	}
 
 	private Converter converterFor(MimeType mimeType){

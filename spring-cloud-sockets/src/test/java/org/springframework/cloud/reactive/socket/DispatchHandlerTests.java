@@ -20,17 +20,21 @@ package org.springframework.cloud.reactive.socket;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import io.rsocket.util.PayloadImpl;
 import org.junit.Before;
 import org.junit.Test;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import org.springframework.cloud.reactive.socket.annotation.OneWayMapping;
 import org.springframework.cloud.reactive.socket.annotation.Payload;
+import org.springframework.cloud.reactive.socket.annotation.RequestManyMapping;
 import org.springframework.cloud.reactive.socket.annotation.RequestOneMapping;
+import org.springframework.cloud.reactive.socket.annotation.RequestStreamMapping;
 import org.springframework.cloud.reactive.socket.converter.JacksonConverter;
 import org.springframework.cloud.reactive.socket.converter.SerializableConverter;
 import org.springframework.context.support.GenericApplicationContext;
@@ -104,6 +108,33 @@ public class DispatchHandlerTests {
 		assertThat(resultsQueue.poll()).isInstanceOf(Throwable.class);
 	}
 
+
+	@Test
+	public void requestMany() throws Exception {
+		Integer count = 10;
+		Flux<io.rsocket.Payload> invocationResult = this.handler.requestStream(new PayloadImpl(converter.write(count), getMetadataBytes(MimeType.valueOf("application/json") ,"/requestMany")));
+		List<Integer> results = invocationResult.map(payload -> {
+			return (Integer)converter.read(payload.getDataUtf8().getBytes(), ResolvableType.forType(Integer.class));
+		}).collectList().block();
+
+		assertThat(results).size().isEqualTo(10);
+	}
+
+	@Test
+	public void requestStream() throws Exception {
+		Flux<Integer> from = Flux.range(0,10);
+		Flux<io.rsocket.Payload> payloadFlux = from.map(integer -> {
+			return new PayloadImpl(converter.write(integer), getMetadataBytes(MimeType.valueOf("application/json") ,"/requestStream"));
+		});
+
+		Flux<io.rsocket.Payload> invocationResult = this.handler.requestChannel(payloadFlux);
+		List<Integer> results = invocationResult.map(payload -> {
+			return (Integer)converter.read(payload.getDataUtf8().getBytes(), ResolvableType.forType(Integer.class));
+		}).take(10).collectList().block();
+
+		assertThat(results).size().isEqualTo(10);
+	}
+
 	private byte[] getMetadataBytes(MimeType mimeType, String path) {
 		Map<String, String> metadata = new HashMap<>();
 		metadata.put("PATH", path);
@@ -128,6 +159,17 @@ public class DispatchHandlerTests {
 			user.setFavoriteColor("blue");
 			return user;
 		}
+
+		@RequestManyMapping(value = "/requestMany", mimeType = "application/json")
+		public Flux<Integer> range(Integer count){
+			return Flux.range(0, count);
+		}
+
+		@RequestStreamMapping(value = "/requestStream", mimeType = "application/json")
+		public Flux<Integer> adder(Flux<Integer> input){
+			return input.map(integer -> integer+1);
+		}
+
 
 	}
 

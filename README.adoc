@@ -1,4 +1,4 @@
-= Spring Cloud Sockets [We need a better name] image:https://travis-ci.org/viniciusccarvalho/spring-cloud-sockets.svg?branch=master["Build Status", link="https://travis-ci.org/viniciusccarvalho/spring-cloud-sockets"]image:https://codecov.io/gh/viniciusccarvalho/spring-cloud-sockets/branch/master/graph/badge.svg["Coverage", link="https://codecov.io/gh/viniciusccarvalho/spring-cloud-sockets"]
+= Spring Cloud Sockets [We need a better name] image:https://travis-ci.org/viniciusccarvalho/spring-cloud-sockets.svg?branch=master["Build Status", link="https://travis-ci.org/viniciusccarvalho/spring-cloud-sockets"] image:https://codecov.io/gh/viniciusccarvalho/spring-cloud-sockets/branch/master/graph/badge.svg["Coverage", link="https://codecov.io/gh/viniciusccarvalho/spring-cloud-sockets"]
 
 This repo is a POC on how to expose Spring Services via http://rsocket.io[RSocket] protocol.
 

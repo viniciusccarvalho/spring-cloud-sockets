@@ -17,7 +17,6 @@
 
 package org.springframework.cloud.reactive.socket;
 
-import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.rsocket.Payload;
@@ -31,6 +30,10 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import reactor.core.publisher.Mono;
 
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+
 import org.springframework.cloud.reactive.socket.annotation.OneWayMapping;
 import org.springframework.cloud.reactive.socket.annotation.RequestOneMapping;
 import org.springframework.cloud.reactive.socket.client.ReactiveSocketClient;
@@ -39,10 +42,7 @@ import org.springframework.cloud.reactive.socket.converter.Converter;
 import org.springframework.cloud.reactive.socket.converter.JacksonConverter;
 import org.springframework.core.ResolvableType;
 
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+
 
 /**
  * @author Vinicius Carvalho

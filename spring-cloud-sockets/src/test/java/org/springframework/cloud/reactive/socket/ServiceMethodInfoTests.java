@@ -22,14 +22,14 @@ import java.lang.reflect.Method;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.springframework.cloud.reactive.socket.annotation.OneWayMapping;
 import org.springframework.cloud.reactive.socket.annotation.Payload;
 import org.springframework.cloud.reactive.socket.annotation.RequestManyMapping;
 import org.springframework.cloud.reactive.socket.annotation.RequestOneMapping;
 import org.springframework.cloud.reactive.socket.annotation.RequestStreamMapping;
 import org.springframework.util.ReflectionUtils;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Vinicius Carvalho

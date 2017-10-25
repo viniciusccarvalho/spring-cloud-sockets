@@ -19,7 +19,6 @@ package org.springframework.cloud.reactive.socket.common;
 
 import java.io.Serializable;
 
-import org.springframework.cloud.reactive.socket.DispatchHandlerTests;
 
 /**
  * Common pojo for serialization tests

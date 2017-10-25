@@ -35,6 +35,7 @@ import org.springframework.cloud.reactive.socket.annotation.Payload;
 import org.springframework.cloud.reactive.socket.annotation.RequestManyMapping;
 import org.springframework.cloud.reactive.socket.annotation.RequestOneMapping;
 import org.springframework.cloud.reactive.socket.annotation.RequestStreamMapping;
+import org.springframework.cloud.reactive.socket.common.User;
 import org.springframework.cloud.reactive.socket.converter.JacksonConverter;
 import org.springframework.cloud.reactive.socket.converter.SerializableConverter;
 import org.springframework.context.support.GenericApplicationContext;
@@ -113,9 +114,8 @@ public class DispatchHandlerTests {
 	public void requestMany() throws Exception {
 		Integer count = 10;
 		Flux<io.rsocket.Payload> invocationResult = this.handler.requestStream(new PayloadImpl(converter.write(count), getMetadataBytes(MimeType.valueOf("application/json") ,"/requestMany")));
-		List<Integer> results = invocationResult.map(payload -> {
-			return (Integer)converter.read(payload.getDataUtf8().getBytes(), ResolvableType.forType(Integer.class));
-		}).collectList().block();
+		List<Integer> results = invocationResult.map(payload -> (Integer)converter.read(payload.getDataUtf8().getBytes(), ResolvableType.forType(Integer.class))
+		).collectList().block();
 
 		assertThat(results).size().isEqualTo(10);
 	}
@@ -168,54 +168,6 @@ public class DispatchHandlerTests {
 		@RequestStreamMapping(value = "/requestStream", mimeType = "application/json")
 		public Flux<Integer> adder(Flux<Integer> input){
 			return input.map(integer -> integer+1);
-		}
-
-
-	}
-
-	static class User implements Serializable{
-		private String name;
-		private String favoriteColor;
-
-		User(){}
-
-		User(String name, String favoriteColor) {
-			this.name = name;
-			this.favoriteColor = favoriteColor;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public void setName(String name) {
-			this.name = name;
-		}
-
-		public String getFavoriteColor() {
-			return favoriteColor;
-		}
-
-		public void setFavoriteColor(String favoriteColor) {
-			this.favoriteColor = favoriteColor;
-		}
-
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || getClass() != o.getClass()) return false;
-
-			User user = (User) o;
-
-			if (name != null ? !name.equals(user.name) : user.name != null) return false;
-			return favoriteColor != null ? favoriteColor.equals(user.favoriteColor) : user.favoriteColor == null;
-		}
-
-		@Override
-		public int hashCode() {
-			int result = name != null ? name.hashCode() : 0;
-			result = 31 * result + (favoriteColor != null ? favoriteColor.hashCode() : 0);
-			return result;
 		}
 	}
 

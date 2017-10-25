@@ -63,7 +63,7 @@ public class ReactiveSocketClient {
 		return (T) Proxy.newProxyInstance(service.getClassLoader(), new Class<?>[] { service }, new InvocationHandler() {
 			@Override
 			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-				AbstractRemoteHandler handler = findHandler(method);
+				AbstractRemoteHandler handler = handlerFor(method);
 				if(handler == null){
 					return null;
 				}
@@ -72,7 +72,7 @@ public class ReactiveSocketClient {
 		});
 	}
 
-	private AbstractRemoteHandler findHandler(Method method){
+	private AbstractRemoteHandler handlerFor(Method method){
 
 		AbstractRemoteHandler handler = remoteHandlers.get(method);
 

@@ -128,7 +128,7 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 			Converter converter = converterFor(MimeType.valueOf(metadata.get("MIME_TYPE").textValue()));
 			Object converted = converter.read(ServiceUtils.toByteArray(payload.getData()), handler.getInfo().getParameterType());
 			Object result = handler.invoke(handler.getInfo().buildInvocationArguments(converted, null));
-			Mono monoResult = monoFor(result);
+			Mono monoResult = monoOF(result);
 			return monoResult.map(o -> {
 				byte[] data = converter.write(o);
 				return new PayloadImpl(data);
@@ -156,7 +156,7 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 		}
 	}
 
-	private Mono monoFor(Object argument){
+	private Mono monoOF(Object argument){
 
 		if(argument.getClass().isAssignableFrom(Mono.class)){
 			return (Mono)argument;

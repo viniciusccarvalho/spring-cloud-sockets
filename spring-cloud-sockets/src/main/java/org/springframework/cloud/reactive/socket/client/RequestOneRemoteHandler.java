@@ -21,6 +21,7 @@ import java.nio.ByteBuffer;
 
 import io.rsocket.RSocket;
 import io.rsocket.util.PayloadImpl;
+import reactor.core.publisher.Mono;
 
 import org.springframework.cloud.reactive.socket.ServiceMethodInfo;
 import org.springframework.cloud.reactive.socket.util.ServiceUtils;
@@ -37,10 +38,13 @@ public class RequestOneRemoteHandler extends AbstractRemoteHandler {
 	@Override
 	public Object doInvoke(Object argument) {
 		byte[] data = payloadConverter.write(argument);
-
-		return socket.requestResponse(new PayloadImpl(ByteBuffer.wrap(data), getMetadata())).map(payload -> {
-			return payloadConverter.read(ServiceUtils.toByteArray(payload.getData()), info.getReturnType());
-		});
+		Mono monoResult = socket.requestResponse(new PayloadImpl(ByteBuffer.wrap(data), getMetadata())).map(payload -> payloadConverter.read(ServiceUtils.toByteArray(payload.getData()), info.getReturnType()));
+		if(Mono.class.isAssignableFrom(info.getReturnType().resolve())){
+			return monoResult;
+		}
+		else{
+			return monoResult.block();
+		}
 
 	}
 }

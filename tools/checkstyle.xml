@@ -99,10 +99,7 @@
         <module name="ParameterAssignment"/>
         -->
         <!-- Imports -->
-        <module name="AvoidStaticImport">
-            <property name="excludes"
-                      value="org.junit.Assert.*,org.mockito.Mockito.*,org.mockito.Matchers.*,org.hamcrest.Matchers.*,org.assertj.core.api.Assertions.*"/>
-        </module>
+
         <module name="FallThrough"/>
         <module name="ImportOrder">
             <property name="groups" value="java,/^javax?\./,*,org.springframework"/>

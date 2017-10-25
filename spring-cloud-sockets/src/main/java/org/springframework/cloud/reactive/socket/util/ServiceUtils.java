@@ -19,6 +19,10 @@ package org.springframework.cloud.reactive.socket.util;
 
 import java.nio.ByteBuffer;
 
+import org.reactivestreams.Publisher;
+
+import org.springframework.core.ResolvableType;
+
 /**
  * @author Vinicius Carvalho
  */
@@ -28,5 +32,13 @@ public class ServiceUtils {
 		byte[] bytes = new byte[buffer.remaining()];
 		buffer.get(bytes, 0, bytes.length);
 		return bytes;
+	}
+
+	public static Class<?> getActualType(ResolvableType type){
+		if(Publisher.class.isAssignableFrom(type.resolve())){
+			return type.getGeneric(0).resolve();
+		}else{
+			return type.resolve();
+		}
 	}
 }

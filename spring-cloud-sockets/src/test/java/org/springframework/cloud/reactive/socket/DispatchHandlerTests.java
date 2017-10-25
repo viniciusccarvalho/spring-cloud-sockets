@@ -38,7 +38,6 @@ import org.springframework.cloud.reactive.socket.common.User;
 import org.springframework.cloud.reactive.socket.converter.JacksonConverter;
 import org.springframework.cloud.reactive.socket.converter.SerializableConverter;
 import org.springframework.context.support.GenericApplicationContext;
-import org.springframework.core.ResolvableType;
 import org.springframework.util.MimeType;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -93,7 +92,7 @@ public class DispatchHandlerTests {
 		User user = new User("Mary", "red");
 		Mono<io.rsocket.Payload> invocationResult = this.handler.requestResponse(new PayloadImpl(converter.write(user), getMetadataBytes(MimeType.valueOf("application/json") ,"/redblue")));
 		User result = invocationResult.map(payload -> {
-			return (User)converter.read(payload.getDataUtf8().getBytes(), ResolvableType.forType(User.class));
+			return (User)converter.read(payload.getDataUtf8().getBytes(), User.class);
 		}).block();
 		assertThat("blue").isEqualTo(result.getFavoriteColor());
 	}
@@ -113,7 +112,7 @@ public class DispatchHandlerTests {
 	public void requestMany() throws Exception {
 		Integer count = 10;
 		Flux<io.rsocket.Payload> invocationResult = this.handler.requestStream(new PayloadImpl(converter.write(count), getMetadataBytes(MimeType.valueOf("application/json") ,"/requestMany")));
-		List<Integer> results = invocationResult.map(payload -> (Integer)converter.read(payload.getDataUtf8().getBytes(), ResolvableType.forType(Integer.class))
+		List<Integer> results = invocationResult.map(payload -> (Integer)converter.read(payload.getDataUtf8().getBytes(), Integer.class)
 		).collectList().block();
 
 		assertThat(results).size().isEqualTo(10);
@@ -128,7 +127,7 @@ public class DispatchHandlerTests {
 
 		Flux<io.rsocket.Payload> invocationResult = this.handler.requestChannel(payloadFlux);
 		List<Integer> results = invocationResult.map(payload -> {
-			return (Integer)converter.read(payload.getDataUtf8().getBytes(), ResolvableType.forType(Integer.class));
+			return (Integer)converter.read(payload.getDataUtf8().getBytes(),Integer.class);
 		}).take(10).collectList().block();
 
 		assertThat(results).size().isEqualTo(10);

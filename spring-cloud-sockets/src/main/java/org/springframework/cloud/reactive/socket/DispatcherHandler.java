@@ -17,6 +17,8 @@
 
 package org.springframework.cloud.reactive.socket;
 
+
+
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -48,6 +50,7 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.MimeType;
 import org.springframework.util.ReflectionUtils;
 
+import static org.springframework.cloud.reactive.socket.util.ServiceUtils.getActualType;
 /**
  * @author Vinicius Carvalho
  */
@@ -111,7 +114,7 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 		try{
 			MethodHandler handler = handlerFor(metadata);
 			Converter converter = converterFor(MimeType.valueOf(metadata.get("MIME_TYPE").textValue()));
-			Object converted = converter.read(ServiceUtils.toByteArray(payload.getData()), handler.getInfo().getParameterType());
+			Object converted = converter.read(ServiceUtils.toByteArray(payload.getData()), getActualType(handler.getInfo().getParameterType()));
 			handler.invoke(handler.getInfo().buildInvocationArguments(converted, null));
 			return Mono.empty();
 		}catch (Exception e){
@@ -126,7 +129,7 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 		try {
 			MethodHandler handler = handlerFor(metadata);
 			Converter converter = converterFor(MimeType.valueOf(metadata.get("MIME_TYPE").textValue()));
-			Object converted = converter.read(ServiceUtils.toByteArray(payload.getData()), handler.getInfo().getParameterType());
+			Object converted = converter.read(ServiceUtils.toByteArray(payload.getData()), getActualType(handler.getInfo().getParameterType()));
 			Object result = handler.invoke(handler.getInfo().buildInvocationArguments(converted, null));
 			Mono monoResult = monoOF(result);
 			return monoResult.map(o -> {
@@ -145,7 +148,7 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 		try {
 			MethodHandler handler = handlerFor(metadata);
 			Converter converter = converterFor(MimeType.valueOf(metadata.get("MIME_TYPE").textValue()));
-			Object converted = converter.read(ServiceUtils.toByteArray(payload.getData()), handler.getInfo().getParameterType());
+			Object converted = converter.read(ServiceUtils.toByteArray(payload.getData()), getActualType(handler.getInfo().getParameterType()));
 			Flux result = (Flux)handler.invoke(handler.getInfo().buildInvocationArguments(converted, null));
 			return result.map(o ->
 				new PayloadImpl(converter.write(o))
@@ -175,7 +178,7 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 			MethodHandler handler = handlerFor(metadata);
 			Converter converter = converterFor(MimeType.valueOf(metadata.get("MIME_TYPE").textValue()));
 			Flux converted = flux.repeat().map(payload -> {
-				return converter.read(ServiceUtils.toByteArray(payload.getData()), handler.getInfo().getParameterType().getGeneric(0));
+				return converter.read(ServiceUtils.toByteArray(payload.getData()), getActualType( handler.getInfo().getParameterType()));
 			});
 			Flux result = (Flux)handler.invoke(handler.getInfo().buildInvocationArguments(converted, null));
 			return result.map(o ->
@@ -185,6 +188,8 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 			return Flux.error(e);
 		}
 	}
+
+
 
 	private Converter converterFor(MimeType mimeType){
 		return this.converters

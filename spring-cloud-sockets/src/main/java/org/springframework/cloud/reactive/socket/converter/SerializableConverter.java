@@ -18,7 +18,6 @@
 package org.springframework.cloud.reactive.socket.converter;
 
 
-import org.springframework.core.ResolvableType;
 import org.springframework.util.MimeType;
 import org.springframework.util.SerializationUtils;
 
@@ -33,7 +32,7 @@ public class SerializableConverter extends AbstractConverter {
 
 
 	@Override
-	public Object read(byte[] payload, ResolvableType targetType) {
+	public Object read(byte[] payload, Class<?> targetType) {
 		return SerializationUtils.deserialize(payload);
 	}
 

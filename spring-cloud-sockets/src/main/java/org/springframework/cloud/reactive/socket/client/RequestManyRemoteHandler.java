@@ -38,6 +38,6 @@ public class RequestManyRemoteHandler extends AbstractRemoteHandler {
 	public Object doInvoke(Object argument) {
 		byte[] data = payloadConverter.write(argument);
 		return socket.requestStream(new PayloadImpl(ByteBuffer.wrap(data), getMetadata()))
-				.map(payload -> payloadConverter.read(ServiceUtils.toByteArray(payload.getData()), info.getParameterType()));
+				.map(payload -> payloadConverter.read(ServiceUtils.toByteArray(payload.getData()), ServiceUtils.getActualType(info.getParameterType())));
 	}
 }

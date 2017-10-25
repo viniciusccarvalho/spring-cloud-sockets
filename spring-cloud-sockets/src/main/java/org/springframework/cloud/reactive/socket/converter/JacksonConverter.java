@@ -22,7 +22,6 @@ import java.io.IOException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.springframework.core.ResolvableType;
 import org.springframework.util.MimeTypeUtils;
 
 /**
@@ -37,9 +36,9 @@ public class JacksonConverter extends AbstractConverter {
 	}
 
 	@Override
-	public Object read(byte[] payload, ResolvableType targetType) {
+	public Object read(byte[] payload, Class<?> targetType) {
 		try {
-			return mapper.readValue(payload, getActualType(targetType).resolve());
+			return mapper.readValue(payload, targetType);
 		}
 		catch (IOException e) {
 			throw new IllegalStateException(e);

@@ -38,7 +38,8 @@ public class RequestOneRemoteHandler extends AbstractRemoteHandler {
 	@Override
 	public Object doInvoke(Object argument) {
 		byte[] data = payloadConverter.write(argument);
-		Mono monoResult = socket.requestResponse(new PayloadImpl(ByteBuffer.wrap(data), getMetadata())).map(payload -> payloadConverter.read(ServiceUtils.toByteArray(payload.getData()), info.getReturnType()));
+		Mono monoResult = socket.requestResponse(new PayloadImpl(ByteBuffer.wrap(data), getMetadata()))
+				.map(payload -> payloadConverter.read(ServiceUtils.toByteArray(payload.getData()), ServiceUtils.getActualType(info.getReturnType())));
 		if(Mono.class.isAssignableFrom(info.getReturnType().resolve())){
 			return monoResult;
 		}

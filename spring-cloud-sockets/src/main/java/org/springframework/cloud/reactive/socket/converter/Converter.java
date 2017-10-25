@@ -17,7 +17,6 @@
 
 package org.springframework.cloud.reactive.socket.converter;
 
-import org.springframework.core.ResolvableType;
 import org.springframework.util.MimeType;
 
 /**
@@ -25,7 +24,7 @@ import org.springframework.util.MimeType;
  */
 public interface Converter {
 
-	Object read(byte[] payload, ResolvableType targetType);
+	Object read(byte[] payload, Class<?> targetType);
 
 	byte[] write(Object target);
 

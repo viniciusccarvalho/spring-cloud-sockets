@@ -40,7 +40,6 @@ import org.springframework.cloud.reactive.socket.client.ReactiveSocketClient;
 import org.springframework.cloud.reactive.socket.common.User;
 import org.springframework.cloud.reactive.socket.converter.Converter;
 import org.springframework.cloud.reactive.socket.converter.JacksonConverter;
-import org.springframework.core.ResolvableType;
 
 
 
@@ -68,7 +67,7 @@ public class ReactiveSocketClientTests {
 
 
 		Payload payload = captor.getValue();
-		JsonNode metadata = (JsonNode) converter.read(payload.getMetadataUtf8().getBytes(), ResolvableType.forType(JsonNode.class));
+		JsonNode metadata = (JsonNode) converter.read(payload.getMetadataUtf8().getBytes(), JsonNode.class);
 		assertThat(converted).isEqualTo(payload.getDataUtf8().getBytes());
 		assertThat("/oneway").isEqualTo(metadata.get("PATH").textValue());
 		assertThat("application/json").isEqualTo(metadata.get("MIME_TYPE").textValue());
@@ -86,7 +85,7 @@ public class ReactiveSocketClientTests {
 		client.create(user);
 		verify(mockSocket, times(1)).requestResponse(captor.capture());
 		Payload payload = captor.getValue();
-		JsonNode metadata = (JsonNode) converter.read(payload.getMetadataUtf8().getBytes(), ResolvableType.forType(JsonNode.class));
+		JsonNode metadata = (JsonNode) converter.read(payload.getMetadataUtf8().getBytes(), JsonNode.class);
 		assertThat(converted).isEqualTo(payload.getDataUtf8().getBytes());
 		assertThat("/requestOne").isEqualTo(metadata.get("PATH").textValue());
 		assertThat("application/json").isEqualTo(metadata.get("MIME_TYPE").textValue());

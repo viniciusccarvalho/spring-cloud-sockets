@@ -42,6 +42,8 @@ public class ServiceMethodInfo {
 
 	MethodParameter payloadParameter;
 
+	ResolvableType payloadType;
+
 	MethodParameter metadataParameter;
 
 	public ServiceMethodInfo(Method method) {
@@ -70,7 +72,7 @@ public class ServiceMethodInfo {
 				}
 				break;
 			case REQUEST_STREAM:
-				if(!Flux.class.isAssignableFrom(method.getReturnType()) || !Flux.class.isAssignableFrom(getParameterType().resolve())){
+				if(!Flux.class.isAssignableFrom(method.getReturnType()) || !Flux.class.isAssignableFrom(this.payloadType.resolve())){
 					throw new IllegalArgumentException("Request Many methods must return and receive a Flux");
 				}
 				break;
@@ -103,6 +105,11 @@ public class ServiceMethodInfo {
 		if(this.payloadParameter == null){
 			throw new IllegalStateException("Service methods annotated with more than one parameter must declare one @Payload parameter");
 		}
+		resolvePayloadType();
+	}
+
+	private void resolvePayloadType(){
+		this.payloadType = ResolvableType.forMethodParameter(this.method, payloadParameter.getParameterIndex());
 	}
 
 	public ResolvableType getReturnType() {
@@ -110,7 +117,7 @@ public class ServiceMethodInfo {
 	}
 
 	public ResolvableType getParameterType() {
-		return ResolvableType.forMethodParameter(this.method, payloadParameter.getParameterIndex());
+		return payloadType;
 	}
 
 	public Method getMethod() {

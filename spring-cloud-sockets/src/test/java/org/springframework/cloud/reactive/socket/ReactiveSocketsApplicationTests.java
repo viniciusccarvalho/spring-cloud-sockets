@@ -45,8 +45,7 @@ public class ReactiveSocketsApplicationTests {
 	@Test
 	public void integrityTest() {
 		RSocket rSocket = RSocketFactory.connect()
-				.transport(TcpClientTransport.create("localhost",
-						5000))
+				.transport(TcpClientTransport.create("localhost", 5000))
 				.start()
 				.block();
 

@@ -45,22 +45,21 @@ public class ReactiveSocketsApplicationTests {
 	@Test
 	public void integrityTest() {
 		RSocket rSocket = RSocketFactory.connect()
-		                              .transport(TcpClientTransport.create("localhost", 5000))
-		                              .start()
-		                              .block();
+				.transport(TcpClientTransport.create("localhost",
+						5000))
+				.start()
+				.block();
 
 		ReactiveSocketClient client = new ReactiveSocketClient(rSocket);
 		TestClient clientProxy = client.create(TestClient.class);
 
-		StepVerifier.create(Flux.merge(
-						clientProxy.receiveStream1("a"),
-						clientProxy.receiveStream2("b")
-					))
-		            .expectSubscription()
-		            .expectNext("a", "b")
-		            .expectNextCount(5)
-		            .thenCancel()
-		            .verify();
+		StepVerifier.create(Flux.merge(clientProxy.receiveStream1("a"),
+				clientProxy.receiveStream2("b")))
+				.expectSubscription()
+				.expectNext("a", "b")
+				.expectNextCount(5)
+				.thenCancel()
+				.verify();
 	}
 
 	@SpringBootApplication
@@ -70,15 +69,15 @@ public class ReactiveSocketsApplicationTests {
 		@RequestManyMapping(value = "/stream1", mimeType = "application/json")
 		public Flux<String> stream1(@Payload String a) {
 			return Flux.just(a)
-			           .mergeWith(Flux.interval(Duration.ofMillis(100))
-			                          .map(i -> "1. Stream Message : [" + i + "]"));
+					.mergeWith(Flux.interval(Duration.ofMillis(100))
+							.map(i -> "1. Stream Message : [" + i + "]"));
 		}
 
 		@RequestManyMapping(value = "/stream2", mimeType = "application/json")
 		public Flux<String> stream2(@Payload String b) {
 			return Flux.just(b)
-			           .mergeWith(Flux.interval(Duration.ofMillis(500))
-			                          .map(i -> "2. Stream Message : [" + i + "]"));
+					.mergeWith(Flux.interval(Duration.ofMillis(500))
+							.map(i -> "2. Stream Message : [" + i + "]"));
 		}
 	}
 

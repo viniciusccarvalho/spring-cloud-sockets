@@ -17,11 +17,10 @@
 
 package org.springframework.cloud.reactive.socket.client;
 
-
 import java.nio.ByteBuffer;
 
 import io.rsocket.RSocket;
-import io.rsocket.util.PayloadImpl;
+import io.rsocket.util.DefaultPayload;
 
 import org.springframework.cloud.reactive.socket.ServiceMethodInfo;
 import org.springframework.cloud.reactive.socket.util.ServiceUtils;
@@ -37,7 +36,7 @@ public class RequestManyRemoteHandler extends AbstractRemoteHandler {
 	@Override
 	public Object doInvoke(Object argument) {
 		byte[] data = payloadConverter.write(argument);
-		return socket.requestStream(new PayloadImpl(ByteBuffer.wrap(data), getMetadata()))
+		return socket.requestStream(DefaultPayload.create(ByteBuffer.wrap(data), getMetadata()))
 				.map(payload -> payloadConverter.read(ServiceUtils.toByteArray(payload.getData()), ServiceUtils.getActualType(info.getParameterType())));
 	}
 }

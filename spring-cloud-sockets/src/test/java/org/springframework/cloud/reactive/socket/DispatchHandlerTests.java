@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 
-import io.rsocket.util.PayloadImpl;
+import io.rsocket.util.DefaultPayload;
 import org.junit.Before;
 import org.junit.Test;
 import reactor.core.publisher.Flux;
@@ -65,7 +65,7 @@ public class DispatchHandlerTests {
 	@Test
 	public void oneWayHandler() throws Exception{
 		User user = new User("Mary", "blue");
-		Mono<Void> result = this.handler.fireAndForget(new PayloadImpl(converter.write(user), getMetadataBytes(MimeType.valueOf("application/json") ,"/oneway")));
+		Mono<Void> result = this.handler.fireAndForget(DefaultPayload.create(converter.write(user), getMetadataBytes(MimeType.valueOf("application/json") ,"/oneway")));
 		User output = (User) resultsQueue.poll();
 		assertThat(output).isEqualTo(user);
 	}
@@ -74,7 +74,7 @@ public class DispatchHandlerTests {
 	public void oneWaySerializable() throws Exception {
 		User user = new User("Mary", "blue");
 		SerializableConverter serializableConverter = new SerializableConverter();
-		Mono<Void> result = this.handler.fireAndForget(new PayloadImpl(serializableConverter.write(user), getMetadataBytes(MimeType.valueOf("application/java-serialized-object") ,"/onewaybinary")));
+		Mono<Void> result = this.handler.fireAndForget(DefaultPayload.create(serializableConverter.write(user), getMetadataBytes(MimeType.valueOf("application/java-serialized-object") ,"/onewaybinary")));
 		User output = (User) resultsQueue.poll();
 		assertThat(output).isEqualTo(user);
 	}
@@ -82,7 +82,7 @@ public class DispatchHandlerTests {
 	@Test
 	public void oneWayWrongMimeType() throws Exception {
 		User user = new User("Mary", "blue");
-		Mono<Void> result = this.handler.fireAndForget(new PayloadImpl(converter.write(user), getMetadataBytes(MimeType.valueOf("application/binary") ,"/oneway")));
+		Mono<Void> result = this.handler.fireAndForget(DefaultPayload.create(converter.write(user), getMetadataBytes(MimeType.valueOf("application/binary") ,"/oneway")));
 		result.doOnError(throwable -> resultsQueue.offer(throwable)).subscribe();
 		assertThat(resultsQueue.poll()).isInstanceOf(Throwable.class);
 	}
@@ -90,7 +90,7 @@ public class DispatchHandlerTests {
 	@Test
 	public void requestOneHandler() throws Exception {
 		User user = new User("Mary", "red");
-		Mono<io.rsocket.Payload> invocationResult = this.handler.requestResponse(new PayloadImpl(converter.write(user), getMetadataBytes(MimeType.valueOf("application/json") ,"/redblue")));
+		Mono<io.rsocket.Payload> invocationResult = this.handler.requestResponse(DefaultPayload.create(converter.write(user), getMetadataBytes(MimeType.valueOf("application/json") ,"/redblue")));
 		User result = invocationResult.map(payload -> {
 			return (User)converter.read(payload.getDataUtf8().getBytes(), User.class);
 		}).block();
@@ -102,7 +102,7 @@ public class DispatchHandlerTests {
 	@Test
 	public void requestOneWrongPath() throws Exception {
 		User user = new User("Mary", "red");
-		Mono<io.rsocket.Payload> invocationResult = this.handler.requestResponse(new PayloadImpl(converter.write(user), getMetadataBytes(MimeType.valueOf("application/json") ,"/notfound")));
+		Mono<io.rsocket.Payload> invocationResult = this.handler.requestResponse(DefaultPayload.create(converter.write(user), getMetadataBytes(MimeType.valueOf("application/json") ,"/notfound")));
 		invocationResult.doOnError(throwable -> { resultsQueue.offer(throwable);}).subscribe();
 		assertThat(resultsQueue.poll()).isInstanceOf(Throwable.class);
 	}
@@ -111,7 +111,7 @@ public class DispatchHandlerTests {
 	@Test
 	public void requestMany() throws Exception {
 		Integer count = 10;
-		Flux<io.rsocket.Payload> invocationResult = this.handler.requestStream(new PayloadImpl(converter.write(count), getMetadataBytes(MimeType.valueOf("application/json") ,"/requestMany")));
+		Flux<io.rsocket.Payload> invocationResult = this.handler.requestStream(DefaultPayload.create(converter.write(count), getMetadataBytes(MimeType.valueOf("application/json") ,"/requestMany")));
 		List<Integer> results = invocationResult.map(payload -> (Integer)converter.read(payload.getDataUtf8().getBytes(), Integer.class)
 		).collectList().block();
 
@@ -122,7 +122,7 @@ public class DispatchHandlerTests {
 	public void requestStream() throws Exception {
 		Flux<Integer> from = Flux.range(0,10);
 		Flux<io.rsocket.Payload> payloadFlux = from.map(integer -> {
-			return new PayloadImpl(converter.write(integer), getMetadataBytes(MimeType.valueOf("application/json") ,"/requestStream"));
+			return DefaultPayload.create(converter.write(integer), getMetadataBytes(MimeType.valueOf("application/json") ,"/requestStream"));
 		});
 
 		Flux<io.rsocket.Payload> invocationResult = this.handler.requestChannel(payloadFlux);

@@ -21,7 +21,7 @@ package org.springframework.cloud.reactive.socket;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.rsocket.Payload;
 import io.rsocket.RSocket;
-import io.rsocket.util.PayloadImpl;
+import io.rsocket.util.DefaultPayload;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -81,7 +81,7 @@ public class ReactiveSocketClientTests {
 		ArgumentCaptor<Payload> captor = ArgumentCaptor.forClass(Payload.class);
 		User user = new User("Alice","blue");
 		byte[] converted = converter.write(user);
-		when(mockSocket.requestResponse(Mockito.any(Payload.class))).thenReturn(Mono.just(new PayloadImpl(converted)));
+		when(mockSocket.requestResponse(Mockito.any(Payload.class))).thenReturn(Mono.just(DefaultPayload.create(converted)));
 		client.create(user);
 		verify(mockSocket, times(1)).requestResponse(captor.capture());
 		Payload payload = captor.getValue();

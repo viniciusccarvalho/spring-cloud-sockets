@@ -27,8 +27,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.rsocket.AbstractRSocket;
 import io.rsocket.Payload;
-import io.rsocket.exceptions.ApplicationException;
-import io.rsocket.util.PayloadImpl;
+import io.rsocket.exceptions.ApplicationErrorException;
+import io.rsocket.util.DefaultPayload;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,6 +82,7 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 		String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(this.applicationContext, Object.class);
 		for(String beanName : beanNames){
 			Class<?> beanType = this.applicationContext.getType(beanName);
+
 			if(beanType != null){
 				final Class<?> userType = ClassUtils.getUserClass(beanType);
 				ReflectionUtils.doWithMethods(userType, method -> {
@@ -131,10 +132,10 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 			Converter converter = converterFor(MimeType.valueOf(metadata.get("MIME_TYPE").textValue()));
 			Object converted = converter.read(ServiceUtils.toByteArray(payload.getData()), getActualType(handler.getInfo().getParameterType()));
 			Object result = handler.invoke(handler.getInfo().buildInvocationArguments(converted, null));
-			Mono monoResult = monoOF(result);
+			Mono<?> monoResult = monoOF(result);
 			return monoResult.map(o -> {
 				byte[] data = converter.write(o);
-				return new PayloadImpl(data);
+				return DefaultPayload.create(data);
 			});
 
 		}catch (Exception e){
@@ -149,20 +150,20 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 			MethodHandler handler = handlerFor(metadata);
 			Converter converter = converterFor(MimeType.valueOf(metadata.get("MIME_TYPE").textValue()));
 			Object converted = converter.read(ServiceUtils.toByteArray(payload.getData()), getActualType(handler.getInfo().getParameterType()));
-			Flux result = (Flux)handler.invoke(handler.getInfo().buildInvocationArguments(converted, null));
+			Flux<?> result = (Flux<?>)handler.invoke(handler.getInfo().buildInvocationArguments(converted, null));
 			return result.map(o ->
-				new PayloadImpl(converter.write(o))
+				DefaultPayload.create(converter.write(o))
 			);
 
 		} catch (Exception e){
-			return Flux.error(new ApplicationException("No path found for " + metadata.get("PATH").asText()));
+			return Flux.error(new ApplicationErrorException("No path found for " + metadata.get("PATH").asText()));
 		}
 	}
 
-	private Mono monoOF(Object argument){
+	private Mono<?> monoOF(Object argument){
 
 		if(argument.getClass().isAssignableFrom(Mono.class)){
-			return (Mono)argument;
+			return (Mono<?>)argument;
 		}else{
 			return Mono.just(argument);
 		}
@@ -180,9 +181,9 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 			Flux converted = flux.repeat().map(payload -> {
 				return converter.read(ServiceUtils.toByteArray(payload.getData()), getActualType( handler.getInfo().getParameterType()));
 			});
-			Flux result = (Flux)handler.invoke(handler.getInfo().buildInvocationArguments(converted, null));
+			Flux<?> result = (Flux<?>)handler.invoke(handler.getInfo().buildInvocationArguments(converted, null));
 			return result.map(o ->
-					new PayloadImpl(converter.write(o))
+					DefaultPayload.create(converter.write(o))
 			);
 		}catch (Exception e){
 			return Flux.error(e);
@@ -207,7 +208,7 @@ public class DispatcherHandler extends AbstractRSocket implements ApplicationCon
 						.getMappingInfo()
 						.getPath().equals(metadata.get("PATH").asText()); })
 				.findFirst()
-				.orElseThrow(() -> { return new ApplicationException("No handler found");} );
+				.orElseThrow(() -> { return new ApplicationErrorException("No handler found");} );
 	}
 
 }
